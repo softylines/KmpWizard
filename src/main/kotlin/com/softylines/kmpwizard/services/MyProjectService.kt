@@ -1,9 +1,9 @@
-package com.github.mohamedrejeb.kmpwizard.services
+package com.softylines.kmpwizard.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.github.mohamedrejeb.kmpwizard.MyBundle
+import com.softylines.kmpwizard.MyBundle
 
 @Service(Service.Level.PROJECT)
 class MyProjectService(project: Project) {

@@ -1,11 +1,19 @@
+@file:Suppress("UnstableApiUsage")
+
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 
 plugins {
     id("java") // Java support
     alias(libs.plugins.kotlin) // Kotlin support
     alias(libs.plugins.intelliJPlatform) // IntelliJ Platform Gradle Plugin
+    alias(libs.plugins.compose.plugin) // Kotlin Compose Plugin
+    alias(libs.plugins.compose.mp) // Compose Multiplatform
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
@@ -15,13 +23,34 @@ group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
 
 // Set the JVM language level used to build the project.
+val jdkLevel = project.property("jdk.level") as String
+
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain { languageVersion = JavaLanguageVersion.of(jdkLevel) }
+
+    compilerOptions.jvmTarget.set(JvmTarget.fromTarget(jdkLevel))
+
+    target {
+        compilations.all { kotlinOptions { freeCompilerArgs += "-Xcontext-receivers" } }
+        sourceSets.all {
+            languageSettings {
+                optIn("androidx.compose.foundation.ExperimentalFoundationApi")
+                optIn("androidx.compose.ui.ExperimentalComposeUiApi")
+                optIn("kotlin.experimental.ExperimentalTypeInference")
+                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+                optIn("org.jetbrains.jewel.foundation.ExperimentalJewelApi")
+                optIn("org.jetbrains.jewel.foundation.InternalJewelApi")
+            }
+        }
+    }
 }
 
 // Configure project's dependencies
 repositories {
+    google()
     mavenCentral()
+
+    maven("https://packages.jetbrains.team/maven/p/kpm/public/")
 
     // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
     intellijPlatform {
@@ -48,6 +77,22 @@ dependencies {
         zipSigner()
         testFramework(TestFrameworkType.Platform)
     }
+
+//    intellijPlatform {
+//        intellijIdeaCommunity("2024.3")
+//        instrumentationTools()
+//        bundledPlugin("com.intellij.gradle")
+//        bundledPlugin("org.jetbrains.kotlin")
+//    }
+
+    implementation(compose.desktop.currentOs) {
+        exclude(group = "org.jetbrains.compose.material")
+        exclude(group = "org.jetbrains.kotlinx")
+    }
+
+    implementation(libs.jewel.ide)
+
+//    implementation(libs.kotlinx.coroutines.core)
 }
 
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
