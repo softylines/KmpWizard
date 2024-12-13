@@ -1,4 +1,4 @@
-package com.github.mohamedrejeb.kmpwizard.toolWindow
+package com.softylines.kmpwizard.toolWindow
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -8,8 +8,12 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.github.mohamedrejeb.kmpwizard.MyBundle
-import com.github.mohamedrejeb.kmpwizard.services.MyProjectService
+import com.softylines.kmpwizard.MyBundle
+import com.softylines.kmpwizard.services.MyProjectService
+import com.softylines.kmpwizard.ui.modulemaker.ModuleMakerDialogContent
+import com.softylines.kmpwizard.ui.modulemaker.ModuleMakerState
+import org.jetbrains.jewel.bridge.JewelComposePanel
+import org.jetbrains.jewel.ui.component.Text
 import javax.swing.JButton
 
 
@@ -31,15 +35,11 @@ class MyToolWindowFactory : ToolWindowFactory {
 
         private val service = toolWindow.project.service<MyProjectService>()
 
-        fun getContent() = JBPanel<JBPanel<*>>().apply {
-            val label = JBLabel(MyBundle.message("randomLabel", "?"))
-
-            add(label)
-            add(JButton(MyBundle.message("shuffle")).apply {
-                addActionListener {
-                    label.text = MyBundle.message("randomLabel", service.getRandomNumber())
-                }
-            })
+        fun getContent() = JewelComposePanel {
+            ModuleMakerDialogContent(
+                state = ModuleMakerState(),
+                onEvent = {}
+            )
         }
     }
 }

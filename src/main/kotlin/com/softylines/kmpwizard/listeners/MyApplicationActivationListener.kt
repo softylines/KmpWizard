@@ -1,4 +1,4 @@
-package com.github.mohamedrejeb.kmpwizard.listeners
+package com.softylines.kmpwizard.listeners
 
 import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.diagnostic.thisLogger

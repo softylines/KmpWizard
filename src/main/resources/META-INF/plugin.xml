@@ -1,6 +1,6 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.mohamedrejeb.kmpwizard</id>
+    <id>com.softylines.kmpwizard</id>
     <name>KmpWizard</name>
     <vendor>mohamedrejeb</vendor>
 
@@ -9,10 +9,27 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.mohamedrejeb.kmpwizard.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="com.softylines.kmpwizard.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
     </extensions>
 
-    <applicationListeners>
-        <listener class="com.github.mohamedrejeb.kmpwizard.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-    </applicationListeners>
+<!--    <applicationListeners>-->
+<!--        <listener class="com.softylines.kmpwizard.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>-->
+<!--    </applicationListeners>-->
+
+    <actions>
+        <action
+                id="KmpWizard.Open.ToolsMenu"
+                class="com.softylines.kmpwizard.ui.modulemaker.ModuleMakerAction"
+                text="Module Maker"
+                description="Open Module Maker">
+            <add-to-group group-id="ToolsMenu"/>
+        </action>
+
+        <action id="KmpWizard.NewGroup"
+                class="com.softylines.kmpwizard.ui.modulemaker.ModuleMakerAction"
+                text="Module Maker"
+                description="Open Module Maker">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
+        </action>
+    </actions>
 </idea-plugin>

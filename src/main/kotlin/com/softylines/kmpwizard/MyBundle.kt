@@ -1,4 +1,4 @@
-package com.github.mohamedrejeb.kmpwizard
+package com.softylines.kmpwizard
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

@@ -6,15 +6,21 @@ junit = "4.13.2"
 changelog = "2.2.1"
 intelliJPlatform = "2.2.0"
 kotlin = "2.1.0"
+compose = "1.7.1"
 kover = "0.8.3"
+jewel = "0.27.0"
 qodana = "2024.3.2"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 
+jewel-ide = { module = "org.jetbrains.jewel:jewel-ide-laf-bridge-243", version.ref = "jewel" }
+
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
 intelliJPlatform = { id = "org.jetbrains.intellij.platform", version.ref = "intelliJPlatform" }
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+compose-plugin = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-mp = { id = "org.jetbrains.compose", version.ref = "compose" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
