@@ -78,21 +78,12 @@ dependencies {
         testFramework(TestFrameworkType.Platform)
     }
 
-//    intellijPlatform {
-//        intellijIdeaCommunity("2024.3")
-//        instrumentationTools()
-//        bundledPlugin("com.intellij.gradle")
-//        bundledPlugin("org.jetbrains.kotlin")
-//    }
-
     implementation(compose.desktop.currentOs) {
         exclude(group = "org.jetbrains.compose.material")
         exclude(group = "org.jetbrains.kotlinx")
     }
 
     implementation(libs.jewel.ide)
-
-//    implementation(libs.kotlinx.coroutines.core)
 }
 
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
