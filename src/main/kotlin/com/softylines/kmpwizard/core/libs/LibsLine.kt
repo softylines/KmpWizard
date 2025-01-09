@@ -1,15 +1,13 @@
 package com.softylines.kmpwizard.core.libs
 
-sealed interface LibsLine {
-
-    fun toLineString(): String
+object LibsLine {
 
     data class Version(
         val name: String,
         val version: String
-    ): LibsLine {
+    ) {
 
-        override fun toLineString(): String {
+        fun toLineString(): String {
             return "$name = \"$version\""
         }
 
@@ -19,7 +17,7 @@ sealed interface LibsLine {
         val name: String,
         val module: String,
         val versionType: VersionType?,
-    ): LibsLine {
+    ) {
 
         constructor(
             name: String,
@@ -32,7 +30,7 @@ sealed interface LibsLine {
             versionType = versionType,
         )
 
-        override fun toLineString(): String {
+        fun toLineString(): String {
             return buildString {
                 append(name)
                 append(" = { ")
@@ -48,9 +46,9 @@ sealed interface LibsLine {
         val name: String,
         val id: String,
         val versionType: VersionType?
-    ): LibsLine {
+    ) {
 
-        override fun toLineString(): String {
+        fun toLineString(): String {
             return buildString {
                 append(name)
                 append(" = { ")
@@ -65,10 +63,10 @@ sealed interface LibsLine {
     data class Bundle(
         val name: String,
         val libraries: List<String>,
-    ): LibsLine {
+    ) {
 
         // Todo: Return formatted bundle with multiple lines
-        override fun toLineString(): String {
+        fun toLineString(): String {
             return buildString {
                 append(name)
                 append(" = [ ")

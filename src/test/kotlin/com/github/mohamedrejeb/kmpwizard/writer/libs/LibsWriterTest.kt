@@ -8,13 +8,6 @@ import kotlin.test.assertEquals
 
 class LibsWriterTest {
 
-    lateinit var writer: LibsWriter
-
-    @Before
-    fun setup() {
-        writer = LibsWriter("build.gradle.kts")
-    }
-
     @Test
     fun `test write version line 1`() {
         val lines = listOf(
@@ -32,7 +25,7 @@ class LibsWriterTest {
 
         val expectedNewLine = "compose = \"1.7.3\""
 
-        val newLines = writer.writeVersion(
+        val newLines = LibsWriter.writeVersion(
             version = LibsLine.Version("compose", "1.7.3"),
             lines = lines
         )
@@ -58,7 +51,7 @@ class LibsWriterTest {
 
         val expectedNewLine = "compose = \"1.7.3\""
 
-        val newLines = writer.writeVersion(
+        val newLines = LibsWriter.writeVersion(
             version = LibsLine.Version("compose", "1.7.3"),
             lines = lines
         )
@@ -84,7 +77,7 @@ class LibsWriterTest {
 
         val expectedNewLine = "compose = \"1.7.3\""
 
-        val newLines = writer.writeVersion(
+        val newLines = LibsWriter.writeVersion(
             version = LibsLine.Version("compose", "1.7.3"),
             lines = lines
         )

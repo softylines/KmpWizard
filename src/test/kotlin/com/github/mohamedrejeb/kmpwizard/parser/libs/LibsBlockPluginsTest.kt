@@ -2,6 +2,7 @@ package com.github.mohamedrejeb.kmpwizard.parser.libs
 
 import com.softylines.kmpwizard.parser.libs.LibsBlock
 import com.softylines.kmpwizard.core.libs.LibsLine
+import com.softylines.kmpwizard.parser.libs.LibsParser
 import org.junit.Test
 
 class LibsBlockPluginsTest {
@@ -13,7 +14,7 @@ class LibsBlockPluginsTest {
             "compose={id=org.jetbrains.compose,version=1.7.1}",
         )
 
-        val block = LibsBlock.Plugins(lines)
+        val block = LibsParser.parsePlugins(lines)
 
         val expectedLines = listOf(
             LibsLine.Plugin(

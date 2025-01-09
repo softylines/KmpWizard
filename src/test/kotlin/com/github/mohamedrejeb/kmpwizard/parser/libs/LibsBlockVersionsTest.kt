@@ -2,6 +2,7 @@ package com.github.mohamedrejeb.kmpwizard.parser.libs
 
 import com.softylines.kmpwizard.core.libs.LibsLine
 import com.softylines.kmpwizard.parser.libs.*
+import com.softylines.kmpwizard.parser.libs.LibsParser
 import org.junit.*
 
 class LibsBlockVersionsTest {
@@ -14,7 +15,7 @@ class LibsBlockVersionsTest {
             "kotlinx-serialization=1.2.2-RC1"
         )
 
-        val block = LibsBlock.Versions(lines)
+        val block = LibsParser.parseVersions(lines)
 
         val expectedLines =
             listOf(

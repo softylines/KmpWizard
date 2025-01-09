@@ -1,16 +1,11 @@
 package com.softylines.kmpwizard.parser.libs
 
-import com.softylines.kmpwizard.core.libs.LibsUtils
-import com.softylines.kmpwizard.parser.libs.LibsBlock.Bundles
-import com.softylines.kmpwizard.parser.libs.LibsBlock.Libraries
-import com.softylines.kmpwizard.parser.libs.LibsBlock.Plugins
-import com.softylines.kmpwizard.parser.libs.LibsBlock.Versions
-import kotlin.io.path.Path
-import kotlin.io.path.readLines
+import com.softylines.kmpwizard.core.libs.*
+import kotlin.io.path.*
 
-class LibsParser(private val path: String) {
+object LibsParser {
 
-    fun parse(): LibsFile {
+    fun parse(path: String): LibsFile {
         val lines = Path(path).readLines()
         return parse(lines)
     }
@@ -53,22 +48,22 @@ class LibsParser(private val path: String) {
                     when (blockName) {
                         LibsUtils.VersionsName ->
                             libsFile = libsFile.copy(
-                                versionsBlock = Versions(lines),
+                                versionsBlock = parseVersions(lines),
                             )
 
                         LibsUtils.LibrariesName ->
                             libsFile = libsFile.copy(
-                                librariesBlock = Libraries(lines),
+                                librariesBlock = parseLibraries(lines),
                             )
 
                         LibsUtils.PluginsName ->
                             libsFile = libsFile.copy(
-                                pluginsBlock = Plugins(lines),
+                                pluginsBlock = parsePlugins(lines),
                             )
 
                         LibsUtils.BundlesName ->
                             libsFile = libsFile.copy(
-                                bundlesBlock = Bundles(lines),
+                                bundlesBlock = parseBundles(lines),
                             )
 
                         else -> null
@@ -82,5 +77,182 @@ class LibsParser(private val path: String) {
 
         return libsFile
     }
+
+    fun parseVersions(lines: List<String>): LibsBlock.Versions {
+        val versionsBlockLines =
+            lines.mapNotNull { line ->
+                val parts = line.split("=")
+                if (parts.size == 2) {
+                    val name = parts[0].trim()
+                    val version = parts[1].trim()
+
+                    LibsLine.Version(
+                        name = name,
+                        version = version
+                    )
+                } else {
+                    null
+                }
+            }
+
+        return LibsBlock.Versions(
+            lines = versionsBlockLines,
+        )
+    }
+
+    fun parseLibraries(lines: List<String>): LibsBlock.Libraries {
+        val librariesBlockLines =
+            lines.mapNotNull { line ->
+                val parts = line.split("=", limit = 2)
+                if (parts.size == 2) {
+                    val name = parts[0].trim()
+                    val mapString = parts[1].trim().substringAfter("{").substringBefore("}")
+                    val map = parserLibraryMap(mapString)
+
+                    if (!isLibraryMapValid(map))
+                        return@mapNotNull null
+
+                    val group = map["group"]
+                    val moduleName = map["name"]
+                    val module = map["module"]
+
+                    val versionType = parseVersionType(map)
+
+                    if (group != null && moduleName != null)
+                        LibsLine.Library(
+                            name = name,
+                            group = group,
+                            moduleName = moduleName,
+                            versionType = versionType,
+                        )
+                    else if (module != null)
+                        LibsLine.Library(
+                            name = name,
+                            module = module,
+                            versionType = versionType,
+                        )
+                    else
+                        null
+                } else {
+                    null
+                }
+            }
+
+        return LibsBlock.Libraries(
+            lines = librariesBlockLines,
+        )
+    }
+
+    fun parsePlugins(lines: List<String>): LibsBlock.Plugins {
+        val pluginsBlockLines =
+            lines.mapNotNull { line ->
+                val parts = line.split("=", limit = 2)
+                if (parts.size == 2) {
+                    val name = parts[0].trim()
+                    val mapString = parts[1].trim().substringAfter("{").substringBefore("}")
+                    val map = parserLibraryMap(mapString)
+
+                    if (!isPluginMapValid(map))
+                        return@mapNotNull null
+
+                    val id = map["id"]
+
+                    val versionType = parseVersionType(map)
+
+                    if (id != null)
+                        LibsLine.Plugin(
+                            name = name,
+                            id = id,
+                            versionType = versionType
+                        )
+                    else
+                        null
+                } else {
+                    null
+                }
+            }
+
+        return LibsBlock.Plugins(
+            lines = pluginsBlockLines,
+        )
+    }
+
+    fun parseBundles(lines: List<String>): LibsBlock.Bundles {
+        // Step 1: Group lines by bundle
+        val groupedLines = mutableListOf<String>()
+
+        var currentGroup = ""
+
+        lines.forEach { line ->
+            currentGroup += line.trim()
+
+            if (line.endsWith(']')) {
+                groupedLines.add(currentGroup)
+                currentGroup = ""
+            }
+        }
+
+        // Step 2: Parse each bundle
+        val bundlesBlockLines = groupedLines.mapNotNull { group ->
+            val parts = group.split("=")
+            if (parts.size == 2) {
+                val name = parts[0].trim()
+                val libraries = parts[1]
+                    .trim()
+                    .substringAfter("[")
+                    .substringBefore("]")
+                    .split(",")
+                    .map { it.trim() }
+
+                LibsLine.Bundle(
+                    name = name,
+                    libraries = libraries
+                )
+            } else {
+                null
+            }
+        }
+
+        return LibsBlock.Bundles(
+            lines = bundlesBlockLines,
+        )
+    }
+
+    private fun isLibraryMapValid(map: Map<String, String>): Boolean {
+        val isGroupMap = "group" in map.keys && "name" in map.keys
+        val isModuleMap = "module" in map.keys
+
+        return isGroupMap || isModuleMap
+    }
+
+    private fun isPluginMapValid(map: Map<String, String>): Boolean {
+        return "id" in map.keys
+    }
+
+    private fun parserLibraryMap(map: String): Map<String, String> {
+        return map.split(",").associate {
+            val (key, value) = it.split("=")
+            key.trim() to value.trim()
+        }
+    }
+
+    private fun parseVersionType(map: Map<String, String>): LibsLine.VersionType? =
+        map.keys
+            .firstOrNull { it.startsWith("version") }
+            ?.let {
+                val key = it
+                val value = map[it] ?: return@let null
+
+                when (key) {
+                    "version" ->
+                        LibsLine.VersionType.Version(value)
+
+                    "version.ref" ->
+                        LibsLine.VersionType.VersionRef(value)
+
+                    else ->
+                        null
+                }
+            }
 
 }

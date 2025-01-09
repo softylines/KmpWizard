@@ -11,13 +11,6 @@ import kotlin.test.assertNull
 
 class LibsParserTest {
 
-    lateinit var parser: LibsParser
-
-    @Before
-    fun setup() {
-        parser = LibsParser("build.gradle.kts")
-    }
-
     @Test
     fun `test get 'versions' block type`() {
         val line = "[versions]"
@@ -73,19 +66,19 @@ class LibsParserTest {
             "kotlin = { id = 'org.jetbrains.kotlin.jvm', version.ref = 'kotlin' }"
         )
 
-        val libsFile = parser.parse(lines)
+        val libsFile = LibsParser.parse(lines)
 
-        val expectedVersionsBlock = LibsBlock.Versions(
+        val expectedVersionsBlock = LibsParser.parseVersions(
             lines
                 .subList(2, 4)
                 .map { removeWhitespaces(it) }
         )
-        val expectedLibrariesBlock = LibsBlock.Libraries(
+        val expectedLibrariesBlock = LibsParser.parseLibraries(
             lines
                 .subList(6, 7)
                 .map { removeWhitespaces(it) }
         )
-        val expectedPluginsBlock = LibsBlock.Plugins(
+        val expectedPluginsBlock = LibsParser.parsePlugins(
             lines
                 .subList(9, 10)
                 .map { removeWhitespaces(it) }

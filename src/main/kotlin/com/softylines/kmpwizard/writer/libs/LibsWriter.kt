@@ -4,9 +4,12 @@ import com.softylines.kmpwizard.core.libs.*
 import com.softylines.kmpwizard.core.libs.LibsUtils.VersionsName
 import kotlin.io.path.*
 
-class LibsWriter(private val path: String) {
+object LibsWriter {
 
-    fun writeVersion(version: LibsLine.Version) {
+    fun writeVersion(
+        path: String,
+        version: LibsLine.Version
+    ) {
         val lines = Path(path).readLines()
 
         val newLines = writeVersion(
