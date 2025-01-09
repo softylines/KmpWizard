@@ -20,12 +20,12 @@ class LibsBlockLibrariesTest {
                 name = "compose",
                 group = "androidx.compose",
                 moduleName = "compose-ui",
-                versionRef = "1.0.0"
+                versionType = LibsLine.VersionType.Version("1.0.0")
             ),
             LibsLine.Library(
                 name = "compose-material",
                 module = "androidx.compose:compose-material",
-                versionRef = "material"
+                versionType = LibsLine.VersionType.VersionRef(ref = "material")
             )
         )
 

@@ -9,18 +9,18 @@ sealed interface LibsLine {
     data class Library(
         val name: String,
         val module: String,
-        val versionRef: String?
+        val versionType: VersionType?,
     ): LibsLine {
 
         constructor(
             name: String,
             group: String,
             moduleName: String,
-            versionRef: String?
+            versionType: VersionType?
         ): this(
             name = name,
             module = "$group:$moduleName",
-            versionRef = versionRef
+            versionType = versionType,
         )
 
     }
@@ -28,11 +28,21 @@ sealed interface LibsLine {
     data class Plugin(
         val name: String,
         val id: String,
-        val versionRef: String?
+        val versionType: VersionType?
     ): LibsLine
 
     data class Bundle(
         val name: String,
         val libraries: List<String>,
     ): LibsLine
+
+    sealed interface VersionType {
+        data class Version(
+            val version: String
+        ): VersionType
+
+        data class VersionRef(
+            val ref: String
+        ): VersionType
+    }
 }

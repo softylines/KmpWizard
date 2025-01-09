@@ -1,10 +1,12 @@
 package com.github.mohamedrejeb.kmpwizard.parser.libs
 
-import com.intellij.testFramework.assertInstanceOf
 import com.softylines.kmpwizard.parser.libs.LibsBlock
 import com.softylines.kmpwizard.parser.libs.LibsParser
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class LibsParserTest {
 
@@ -20,7 +22,7 @@ class LibsParserTest {
         val line = "[versions]"
         val blockType = parser.getBlockName(line)
 
-        assert(blockType == LibsBlock.VersionsName)
+        assertEquals(blockType, LibsBlock.VersionsName)
     }
 
     @Test
@@ -28,7 +30,7 @@ class LibsParserTest {
         val line = "versions]"
         val blockType = parser.getBlockName(line)
 
-        assert(blockType == null)
+        assertNull(blockType)
     }
 
     @Test
@@ -36,7 +38,7 @@ class LibsParserTest {
         val line = "# Kotlin"
         val blockType = parser.getBlockName(line)
 
-        assert(blockType == null)
+        assertNull(blockType)
     }
 
     @Test
@@ -70,7 +72,7 @@ class LibsParserTest {
             "kotlin = { id = 'org.jetbrains.kotlin.jvm', version.ref = 'kotlin' }"
         )
 
-        val blocks = parser.parse(lines)
+        val libsFile = parser.parse(lines)
 
         val expectedVersionsBlock = LibsBlock.Versions(
             lines
@@ -88,15 +90,14 @@ class LibsParserTest {
                 .map { removeWhitespaces(it) }
         )
 
-        assert(blocks.size == 3)
+        assertNotNull(libsFile.versionsBlock)
+        assertNotNull(libsFile.librariesBlock)
+        assertNotNull(libsFile.pluginsBlock)
+        assertNull(libsFile.bundlesBlock)
 
-        val versionsBlock = assertInstanceOf<LibsBlock.Versions>(blocks[0])
-        val librariesBlock = assertInstanceOf<LibsBlock.Libraries>(blocks[1])
-        val pluginsBlock = assertInstanceOf<LibsBlock.Plugins>(blocks[2])
-
-        assert(versionsBlock.lines == expectedVersionsBlock.lines)
-        assert(librariesBlock.lines == expectedLibrariesBlock.lines)
-        assert(pluginsBlock.lines == expectedPluginsBlock.lines)
+        assert(libsFile.versionsBlock.lines == expectedVersionsBlock.lines)
+        assert(libsFile.librariesBlock.lines == expectedLibrariesBlock.lines)
+        assert(libsFile.pluginsBlock.lines == expectedPluginsBlock.lines)
     }
 
     fun removeWhitespaces(line: String): String {

@@ -19,12 +19,12 @@ class LibsBlockPluginsTest {
             LibsLine.Plugin(
                 name = "kotlin",
                 id = "org.jetbrains.kotlin",
-                versionRef = "kotlin"
+                versionType = LibsLine.VersionType.VersionRef(ref = "kotlin")
             ),
             LibsLine.Plugin(
                 name = "compose",
                 id = "org.jetbrains.compose",
-                versionRef = "1.7.1"
+                versionType = LibsLine.VersionType.Version(version = "1.7.1")
             )
         )
 
