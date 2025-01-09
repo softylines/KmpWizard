@@ -1,5 +1,6 @@
 package com.softylines.kmpwizard.parser.libs.utils
 
+import com.softylines.kmpwizard.core.libs.LibsLine
 import com.softylines.kmpwizard.parser.libs.*
 
 /**

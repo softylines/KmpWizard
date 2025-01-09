@@ -1,7 +1,7 @@
 package com.github.mohamedrejeb.kmpwizard.parser.libs
 
 import com.softylines.kmpwizard.parser.libs.LibsBlock
-import com.softylines.kmpwizard.parser.libs.LibsLine
+import com.softylines.kmpwizard.core.libs.LibsLine
 import org.junit.Test
 
 class LibsBlockBundlesTest {

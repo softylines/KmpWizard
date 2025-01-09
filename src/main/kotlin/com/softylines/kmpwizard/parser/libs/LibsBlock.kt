@@ -1,5 +1,6 @@
 package com.softylines.kmpwizard.parser.libs
 
+import com.softylines.kmpwizard.core.libs.LibsLine
 import kotlin.text.startsWith
 
 // Todo: Sepereate parsing blocks and blocks state
@@ -203,14 +204,5 @@ sealed interface LibsBlock<out T : LibsLine> {
                             null
                     }
                 }
-
-    companion object {
-        const val VersionsName = "versions"
-        const val LibrariesName = "libraries"
-        const val PluginsName = "plugins"
-        const val BundlesName = "bundles"
-
-        val BlockTypes = listOf(VersionsName, LibrariesName, PluginsName, BundlesName)
-    }
 
 }
