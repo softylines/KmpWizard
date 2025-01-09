@@ -1,5 +1,8 @@
 package com.softylines.kmpwizard.parser.libs
 
+import kotlin.text.startsWith
+
+// Todo: Sepereate parsing blocks and blocks state
 sealed interface LibsBlock<out T : LibsLine> {
 
     val lines: List<T>
@@ -54,23 +57,20 @@ sealed interface LibsBlock<out T : LibsLine> {
                         val moduleName = map["name"]
                         val module = map["module"]
 
-                        val version =
-                            map.keys
-                                .firstOrNull { it.startsWith("version") }
-                                ?.let { map[it] }
+                        val versionType = parseVersionType(map)
 
                         if (group != null && moduleName != null)
                             LibsLine.Library(
                                 name = name,
                                 group = group,
                                 moduleName = moduleName,
-                                versionRef = version,
+                                versionType = versionType,
                             )
                         else if (module != null)
                             LibsLine.Library(
                                 name = name,
                                 module = module,
-                                versionRef = version,
+                                versionType = versionType,
                             )
                         else
                             null
@@ -110,16 +110,13 @@ sealed interface LibsBlock<out T : LibsLine> {
 
                         val id = map["id"]
 
-                        val version =
-                            map.keys
-                                .firstOrNull { it.startsWith("version") }
-                                ?.let { map[it] }
+                        val versionType = parseVersionType(map)
 
                         if (id != null)
                             LibsLine.Plugin(
                                 name = name,
                                 id = id,
-                                versionRef = version
+                                versionType = versionType
                             )
                         else
                             null
@@ -188,6 +185,25 @@ sealed interface LibsBlock<out T : LibsLine> {
         }
     }
 
+    fun parseVersionType(map: Map<String, String>): LibsLine.VersionType? =
+            map.keys
+                .firstOrNull { it.startsWith("version") }
+                ?.let {
+                    val key = it
+                    val value = map[it] ?: return@let null
+
+                    when (key) {
+                        "version" ->
+                            LibsLine.VersionType.Version(value)
+
+                        "version.ref" ->
+                            LibsLine.VersionType.VersionRef(value)
+
+                        else ->
+                            null
+                    }
+                }
+
     companion object {
         const val VersionsName = "versions"
         const val LibrariesName = "libraries"
@@ -195,19 +211,6 @@ sealed interface LibsBlock<out T : LibsLine> {
         const val BundlesName = "bundles"
 
         val BlockTypes = listOf(VersionsName, LibrariesName, PluginsName, BundlesName)
-
-        fun create(
-            name: String,
-            lines: List<String>
-        ): LibsBlock<LibsLine>? {
-            return when (name) {
-                VersionsName -> Versions(lines)
-                LibrariesName -> Libraries(lines)
-                PluginsName -> Plugins(lines)
-                BundlesName -> Bundles(lines)
-                else -> null
-            }
-        }
     }
 
 }

@@ -1,13 +1,21 @@
 package com.softylines.kmpwizard.parser.libs
 
+import com.softylines.kmpwizard.parser.libs.LibsBlock.Bundles
+import com.softylines.kmpwizard.parser.libs.LibsBlock.Companion.BundlesName
+import com.softylines.kmpwizard.parser.libs.LibsBlock.Companion.LibrariesName
+import com.softylines.kmpwizard.parser.libs.LibsBlock.Companion.PluginsName
+import com.softylines.kmpwizard.parser.libs.LibsBlock.Companion.VersionsName
+import com.softylines.kmpwizard.parser.libs.LibsBlock.Libraries
+import com.softylines.kmpwizard.parser.libs.LibsBlock.Plugins
+import com.softylines.kmpwizard.parser.libs.LibsBlock.Versions
 import kotlin.io.path.Path
 import kotlin.io.path.readLines
 
 class LibsParser(private val path: String) {
 
-    fun parse() {
+    fun parse(): LibsFile {
         val lines = Path(path).readLines()
-        parse(lines)
+        return parse(lines)
     }
 
     /**
@@ -15,8 +23,8 @@ class LibsParser(private val path: String) {
      *
      * @param lines the lines to parse
      */
-    fun parse(lines: List<String>): List<LibsBlock<LibsLine>> {
-        val blockList = mutableListOf<LibsBlock<LibsLine>>()
+    fun parse(lines: List<String>): LibsFile {
+        var libsFile = LibsFile()
 
         var blockName: String? = null
         val blockLines = mutableListOf<String>()
@@ -43,10 +51,31 @@ class LibsParser(private val path: String) {
             // If the block type is not null, we add the block lines to the group map
             if (currentBlockName != null || i == lines.lastIndex) {
                 if (blockName != null) {
-                    val libsBlock = LibsBlock.create(blockName, blockLines.toList())
+                    val lines = blockLines.toList()
 
-                    if (libsBlock != null)
-                        blockList.add(libsBlock)
+                    when (blockName) {
+                        VersionsName ->
+                            libsFile = libsFile.copy(
+                                versionsBlock = Versions(lines),
+                            )
+
+                        LibrariesName ->
+                            libsFile = libsFile.copy(
+                                librariesBlock = Libraries(lines),
+                            )
+
+                        PluginsName ->
+                            libsFile = libsFile.copy(
+                                pluginsBlock = Plugins(lines),
+                            )
+
+                        BundlesName ->
+                            libsFile = libsFile.copy(
+                                bundlesBlock = Bundles(lines),
+                            )
+
+                        else -> null
+                    }
                 }
 
                 blockLines.clear()
@@ -54,7 +83,7 @@ class LibsParser(private val path: String) {
             }
         }
 
-        return blockList.toList()
+        return libsFile
     }
 
     /**
