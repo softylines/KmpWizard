@@ -1,5 +1,6 @@
 package com.github.mohamedrejeb.kmpwizard.parser.libs
 
+import com.softylines.kmpwizard.core.libs.LibsUtils
 import com.softylines.kmpwizard.parser.libs.LibsBlock
 import com.softylines.kmpwizard.parser.libs.LibsParser
 import org.junit.Before
@@ -20,15 +21,15 @@ class LibsParserTest {
     @Test
     fun `test get 'versions' block type`() {
         val line = "[versions]"
-        val blockType = parser.getBlockName(line)
+        val blockType = LibsUtils.getBlockName(line)
 
-        assertEquals(blockType, LibsBlock.VersionsName)
+        assertEquals(blockType, LibsUtils.VersionsName)
     }
 
     @Test
     fun `test get wrong block type`() {
         val line = "versions]"
-        val blockType = parser.getBlockName(line)
+        val blockType = LibsUtils.getBlockName(line)
 
         assertNull(blockType)
     }
@@ -36,7 +37,7 @@ class LibsParserTest {
     @Test
     fun `test get comment`() {
         val line = "# Kotlin"
-        val blockType = parser.getBlockName(line)
+        val blockType = LibsUtils.getBlockName(line)
 
         assertNull(blockType)
     }
@@ -44,7 +45,7 @@ class LibsParserTest {
     @Test
     fun `test is comment success`() {
         val line = "# Kotlin"
-        val isComment = parser.isComment(line)
+        val isComment = LibsUtils.isComment(line)
 
         assert(isComment)
     }
@@ -52,7 +53,7 @@ class LibsParserTest {
     @Test
     fun `test is comment failure`() {
         val line = "kotlin = '1.5.21'"
-        val isComment = parser.isComment(line)
+        val isComment = LibsUtils.isComment(line)
 
         assert(!isComment)
     }

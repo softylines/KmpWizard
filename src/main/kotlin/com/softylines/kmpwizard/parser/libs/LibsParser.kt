@@ -1,10 +1,7 @@
 package com.softylines.kmpwizard.parser.libs
 
+import com.softylines.kmpwizard.core.libs.LibsUtils
 import com.softylines.kmpwizard.parser.libs.LibsBlock.Bundles
-import com.softylines.kmpwizard.parser.libs.LibsBlock.Companion.BundlesName
-import com.softylines.kmpwizard.parser.libs.LibsBlock.Companion.LibrariesName
-import com.softylines.kmpwizard.parser.libs.LibsBlock.Companion.PluginsName
-import com.softylines.kmpwizard.parser.libs.LibsBlock.Companion.VersionsName
 import com.softylines.kmpwizard.parser.libs.LibsBlock.Libraries
 import com.softylines.kmpwizard.parser.libs.LibsBlock.Plugins
 import com.softylines.kmpwizard.parser.libs.LibsBlock.Versions
@@ -37,11 +34,11 @@ class LibsParser(private val path: String) {
                 .replace("'", "")
 
             // Skip empty lines
-            if (line.isBlank() || isComment(line))
+            if (line.isBlank() || LibsUtils.isComment(line))
                 return@forEachIndexed
 
             // Check if the line is a block type
-            val currentBlockName = getBlockName(line)
+            val currentBlockName = LibsUtils.getBlockName(line)
 
             // Add the line to the block lines
             if (currentBlockName == null) {
@@ -54,22 +51,22 @@ class LibsParser(private val path: String) {
                     val lines = blockLines.toList()
 
                     when (blockName) {
-                        VersionsName ->
+                        LibsUtils.VersionsName ->
                             libsFile = libsFile.copy(
                                 versionsBlock = Versions(lines),
                             )
 
-                        LibrariesName ->
+                        LibsUtils.LibrariesName ->
                             libsFile = libsFile.copy(
                                 librariesBlock = Libraries(lines),
                             )
 
-                        PluginsName ->
+                        LibsUtils.PluginsName ->
                             libsFile = libsFile.copy(
                                 pluginsBlock = Plugins(lines),
                             )
 
-                        BundlesName ->
+                        LibsUtils.BundlesName ->
                             libsFile = libsFile.copy(
                                 bundlesBlock = Bundles(lines),
                             )
@@ -84,34 +81,6 @@ class LibsParser(private val path: String) {
         }
 
         return libsFile
-    }
-
-    /**
-     * Get the block type from the line
-     *
-     * @param line the line to check
-     * @return the block type or null if the line is not a block type
-     */
-    fun getBlockName(line: String): String? {
-        if (line.length < 3 || line.first() != '[' || line.last() != ']')
-            return null
-
-        val blockName = line.substring(1, line.length - 1)
-
-        return if (blockName in LibsBlock.BlockTypes)
-            blockName
-        else
-            null
-    }
-
-    /**
-     * Check if the line is a comment
-     *
-     * @param line the line to check
-     * @return true if the line is a comment, false otherwise
-     */
-    fun isComment(line: String): Boolean {
-        return line.trim().startsWith("#")
     }
 
 }
