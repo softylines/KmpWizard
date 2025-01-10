@@ -1,6 +1,4 @@
-package com.softylines.kmpwizard.parser.libs
-
-import com.softylines.kmpwizard.core.libs.LibsLine
+package com.softylines.kmpwizard.core.libs
 
 object LibsBlock {
 

@@ -1,6 +1,5 @@
 package com.github.mohamedrejeb.kmpwizard.parser.libs
 
-import com.softylines.kmpwizard.parser.libs.LibsBlock
 import com.softylines.kmpwizard.core.libs.LibsLine
 import com.softylines.kmpwizard.parser.libs.LibsParser
 import org.junit.Test
