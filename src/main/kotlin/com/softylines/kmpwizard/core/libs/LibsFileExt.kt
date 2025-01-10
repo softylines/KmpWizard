@@ -1,7 +1,4 @@
-package com.softylines.kmpwizard.parser.libs.utils
-
-import com.softylines.kmpwizard.core.libs.LibsLine
-import com.softylines.kmpwizard.parser.libs.*
+package com.softylines.kmpwizard.core.libs
 
 /**
  * Check if the libs file has a version with the given name

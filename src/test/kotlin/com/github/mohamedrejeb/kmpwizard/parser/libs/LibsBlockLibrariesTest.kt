@@ -1,7 +1,7 @@
 package com.github.mohamedrejeb.kmpwizard.parser.libs
 
-import com.softylines.kmpwizard.parser.libs.LibsBlock
 import com.softylines.kmpwizard.core.libs.LibsLine
+import com.softylines.kmpwizard.parser.libs.LibsParser
 import org.junit.Test
 
 class LibsBlockLibrariesTest {
@@ -13,7 +13,7 @@ class LibsBlockLibrariesTest {
             "compose-material={ module=androidx.compose:compose-material, version.ref=material }",
         )
 
-        val block = LibsBlock.Libraries(lines)
+        val block = LibsParser.parseLibraries(lines)
 
         val expectedLines = listOf(
             LibsLine.Library(

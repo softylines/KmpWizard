@@ -1,4 +1,4 @@
-package com.softylines.kmpwizard.parser.libs
+package com.softylines.kmpwizard.core.libs
 
 data class LibsFile(
     val versionsBlock: LibsBlock.Versions? = null,

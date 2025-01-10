@@ -1,22 +1,13 @@
 package com.github.mohamedrejeb.kmpwizard.parser.libs
 
 import com.softylines.kmpwizard.core.libs.LibsUtils
-import com.softylines.kmpwizard.parser.libs.LibsBlock
 import com.softylines.kmpwizard.parser.libs.LibsParser
-import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class LibsParserTest {
-
-    lateinit var parser: LibsParser
-
-    @Before
-    fun setup() {
-        parser = LibsParser("build.gradle.kts")
-    }
 
     @Test
     fun `test get 'versions' block type`() {
@@ -73,19 +64,19 @@ class LibsParserTest {
             "kotlin = { id = 'org.jetbrains.kotlin.jvm', version.ref = 'kotlin' }"
         )
 
-        val libsFile = parser.parse(lines)
+        val libsFile = LibsParser.parse(lines)
 
-        val expectedVersionsBlock = LibsBlock.Versions(
+        val expectedVersionsBlock = LibsParser.parseVersions(
             lines
                 .subList(2, 4)
                 .map { removeWhitespaces(it) }
         )
-        val expectedLibrariesBlock = LibsBlock.Libraries(
+        val expectedLibrariesBlock = LibsParser.parseLibraries(
             lines
                 .subList(6, 7)
                 .map { removeWhitespaces(it) }
         )
-        val expectedPluginsBlock = LibsBlock.Plugins(
+        val expectedPluginsBlock = LibsParser.parsePlugins(
             lines
                 .subList(9, 10)
                 .map { removeWhitespaces(it) }

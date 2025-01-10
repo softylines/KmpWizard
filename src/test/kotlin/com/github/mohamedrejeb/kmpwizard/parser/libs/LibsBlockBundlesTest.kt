@@ -1,7 +1,7 @@
 package com.github.mohamedrejeb.kmpwizard.parser.libs
 
-import com.softylines.kmpwizard.parser.libs.LibsBlock
 import com.softylines.kmpwizard.core.libs.LibsLine
+import com.softylines.kmpwizard.parser.libs.LibsParser
 import org.junit.Test
 
 class LibsBlockBundlesTest {
@@ -17,7 +17,7 @@ class LibsBlockBundlesTest {
             "coil=[core,compose]"
         )
 
-        val block = LibsBlock.Bundles(lines)
+        val block = LibsParser.parseBundles(lines)
 
         val expectedLines = listOf(
             LibsLine.Bundle(
