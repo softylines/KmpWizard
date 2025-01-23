@@ -1,4 +1,4 @@
-package com.github.mohamedrejeb.kmpwizard.parser.libs
+package test.kmpwizard.parser.libs
 
 import com.softylines.kmpwizard.core.libs.LibsUtils
 import com.softylines.kmpwizard.parser.libs.LibsParser

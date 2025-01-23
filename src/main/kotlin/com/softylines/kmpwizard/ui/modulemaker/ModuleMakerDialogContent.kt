@@ -1,20 +1,13 @@
 package com.softylines.kmpwizard.ui.modulemaker
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import org.jetbrains.jewel.foundation.actionSystem.provideData
+import com.softylines.kmpwizard.ui.modulemaker.layer.ModuleTemplate
 import org.jetbrains.jewel.foundation.modifier.onActivated
 import org.jetbrains.jewel.foundation.modifier.trackActivation
-import org.jetbrains.jewel.foundation.theme.JewelTheme
-import org.jetbrains.jewel.ui.Outline
 import org.jetbrains.jewel.ui.component.*
-import org.jetbrains.jewel.ui.icons.AllIconsKeys
 
 @Composable
 fun ModuleMakerDialogContent(
@@ -29,43 +22,48 @@ fun ModuleMakerDialogContent(
         var activated by remember { mutableStateOf(false) }
 
         Text(
-            text = "Module name:",
+            text = "Create new module:",
             style = Typography.h3TextStyle(),
             modifier = Modifier.onActivated { activated = it },
         )
 
-        val textFieldState = rememberTextFieldState()
+        TextField(
+            state = state.moduleNameState,
+            placeholder = { Text("Enter module name") },
+            modifier = Modifier.width(200.dp),
+        )
 
         TextField(
-            state = textFieldState,
-            placeholder = { Text("Enter module name") },
+            state = state.packageNameState,
+            placeholder = { Text("Enter package name") },
             modifier = Modifier.width(200.dp),
         )
 
         val options = remember {
             listOf(
-                "UI Layer",
-                "Data Layer",
-                "Domain Layer",
+                ModuleTemplate.Ui,
+                ModuleTemplate.Data,
+                ModuleTemplate.Domain,
             )
         }
-        var selectedItem by remember { mutableIntStateOf(-1) }
 
         Dropdown(
             menuContent = {
-                options.forEachIndexed { index, option ->
+                options.forEach { layer ->
                     selectableItem(
-                        selectedItem == index,
-                        onClick = { selectedItem = index }
+                        selected = state.moduleLayer == layer,
+                        onClick = {
+                            onEvent(ModuleMakerEvent.OnLayerSelected(layer))
+                        }
                     ) {
                         Text(
-                            text = option,
+                            text = layer.name,
                         )
                     }
                 }
             }
         ) {
-            Text("Selected item: ${options.getOrNull(selectedItem) ?: "None"}")
+            Text(state.moduleLayer.name)
         }
 
 //        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
