@@ -1,8 +1,11 @@
 package com.softylines.kmpwizard.ui.modulemaker.layer
 
-interface MLayer {
+import com.softylines.kmpwizard.core.template.IFileTemplate
+
+interface ModuleTemplate {
 
     val name: String
+    val files: List<IFileTemplate>
 
     companion object {
         val Ui = UiMLayer()

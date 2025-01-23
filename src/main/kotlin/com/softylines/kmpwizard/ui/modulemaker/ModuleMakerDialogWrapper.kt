@@ -13,6 +13,8 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.ui.JBDimension
 import com.softylines.kmpwizard.template.generateDemoMdFileTemplate
+import com.softylines.kmpwizard.writer.module.ModuleWriter
+import fleet.rpc.core.retry
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +53,11 @@ class ModuleMakerDialogWrapper(
 
     private fun onEvent(event: ModuleMakerEvent) {
         when (event) {
-            is ModuleMakerEvent.OnCreateModule -> onCreateModule()
+            is ModuleMakerEvent.OnLayerSelected ->
+                onLayerSelected(event)
+
+            is ModuleMakerEvent.OnCreateModule ->
+                onCreateModule()
         }
     }
 
@@ -140,6 +146,10 @@ class ModuleMakerDialogWrapper(
         )
     }
 
+    private fun onLayerSelected(event: ModuleMakerEvent.OnLayerSelected) {
+        state = state.copy(moduleLayer = event.layer)
+    }
+
     private fun onCreateModule() {
         // Update Gradle settings file
         val settingsGradleFile = getSettingsGradleFile()
@@ -149,24 +159,20 @@ class ModuleMakerDialogWrapper(
             return
         }
 
-        val lines = settingsGradleFile.readLines().toMutableList()
-        val lastNonEmptyLineIndex = lines.indexOfLast { it.isNotBlank() }
-        lines.add(lastNonEmptyLineIndex + 1, "include(\":${state.moduleName}\")")
+        val rootDirectory = File(rootDirectoryString())
 
-        Files.write(
-            settingsGradleFile.toPath(),
-            lines
-        )
+        if (!rootDirectory.exists())
+            // Todo: Show error message (Notification, ui message, etc)
+            return
 
         // Create module directory
         // Todo: Support nested modules
         // Todo: Support layers
-        val moduleDirectory = Path.of(rootDirectoryString(), state.moduleName).toFile()
-        moduleDirectory.mkdirs()
-
-        val mdFile = Path.of(moduleDirectory.absolutePath, "README.md").toFile()
-        mdFile.createNewFile()
-        mdFile.writeText(generateDemoMdFileTemplate(state))
+        val moduleDirectory = ModuleWriter.createModule(
+            state = state,
+            parentDirectory = rootDirectory,
+            settingsGradleFile = settingsGradleFile,
+        ) ?: return
 
         // Refresh and Sync Project
         refreshFileSystem(

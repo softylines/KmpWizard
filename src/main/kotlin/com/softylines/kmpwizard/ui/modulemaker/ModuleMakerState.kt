@@ -1,9 +1,10 @@
 package com.softylines.kmpwizard.ui.modulemaker
 
-import com.softylines.kmpwizard.ui.modulemaker.layer.MLayer
+import androidx.compose.foundation.text.input.TextFieldState
+import com.softylines.kmpwizard.ui.modulemaker.layer.ModuleTemplate
 
 data class ModuleMakerState(
-    val moduleName: String = "profile",
-    val packageName: String = "",
-    val moduleLayer: MLayer = MLayer.Ui,
+    val moduleNameState: TextFieldState = TextFieldState(),
+    val packageNameState: TextFieldState = TextFieldState(),
+    val moduleLayer: ModuleTemplate = ModuleTemplate.Ui,
 )

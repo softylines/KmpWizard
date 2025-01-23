@@ -1,0 +1,73 @@
+package com.github.mohamedrejeb.kmpwizard.core.template
+
+import androidx.compose.foundation.text.input.TextFieldState
+import com.softylines.kmpwizard.core.template.FileTemplate
+import com.softylines.kmpwizard.core.template.FolderTemplate
+import com.softylines.kmpwizard.core.template.IFileTemplate
+import com.softylines.kmpwizard.core.template.formatModuleName
+import com.softylines.kmpwizard.core.template.parseName
+import com.softylines.kmpwizard.ui.modulemaker.ModuleMakerState
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class IFileTemplateTest {
+
+    @Test
+    fun testParseFileNameWithNoArgument() {
+        val state = ModuleMakerState(moduleNameState = TextFieldState("MyModule"))
+        val file = FileTemplate(name = "build.gradle")
+
+        val result = file.parseName(state)
+
+        assertEquals("build.gradle", result)
+    }
+
+    @Test
+    fun testParseFileNameWithArgument() {
+        val moduleName = "MyModule"
+        val state = ModuleMakerState(moduleNameState = TextFieldState(moduleName))
+        val file = FileTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}Repository")
+
+        val result = file.parseName(state)
+
+        assertEquals("${moduleName}Repository", result)
+    }
+
+    @Test
+    fun testParseFolderNameWithNoArgument() {
+        val state = ModuleMakerState(moduleNameState = TextFieldState("MyModule"))
+        val folder = FolderTemplate(name = "data", files = emptyList())
+
+        val result = folder.parseName(state)
+
+        assertEquals("data", result)
+    }
+
+    @Test
+    fun testParseFolderNameWithArgument() {
+        val moduleName = "MyModule"
+        val state = ModuleMakerState(moduleNameState = TextFieldState(moduleName))
+        val folder = FolderTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}", files = emptyList())
+
+        val result = folder.parseName(state)
+
+        assertEquals(moduleName, result)
+    }
+
+    @Test
+    fun testFormatModuleNameForFile() {
+        val moduleName = "my-module"
+        val file = FileTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}Repository")
+
+        assertEquals("MyModule", file.formatModuleName(moduleName))
+    }
+
+    @Test
+    fun testFormatModuleNameForFolder() {
+        val moduleName = "my-module"
+        val folder = FolderTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}", files = emptyList())
+
+        assertEquals("mymodule", folder.formatModuleName(moduleName))
+    }
+
+}
