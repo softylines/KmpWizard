@@ -6,7 +6,11 @@ import com.softylines.kmpwizard.core.template.IFileTemplate
 import com.softylines.kmpwizard.core.template.packageName
 
 fun buildIFileTemplateList(
-    parent: FolderTemplate? = null,
+    invoke: IFileTemplateDsl.() -> Unit,
+): List<IFileTemplate> = buildIFileTemplateList(null, invoke)
+
+fun buildIFileTemplateList(
+    parent: FolderTemplate?,
     invoke: IFileTemplateDsl.() -> Unit,
 ): List<IFileTemplate> {
     val dsl = IFileTemplateDslImpl(parent)

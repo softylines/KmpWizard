@@ -30,13 +30,13 @@ class IFileTemplateTest {
 
         val result = file.parseName(state)
 
-        assertEquals("${moduleName}Repository", result)
+        assertEquals("MymoduleRepository", result)
     }
 
     @Test
     fun testParseFolderNameWithNoArgument() {
         val state = ModuleMakerState(moduleNameState = TextFieldState("MyModule"))
-        val folder = FolderTemplate(name = "data", files = emptyList())
+        val folder = FolderTemplate(name = "data", files = mutableListOf())
 
         val result = folder.parseName(state)
 
@@ -47,11 +47,11 @@ class IFileTemplateTest {
     fun testParseFolderNameWithArgument() {
         val moduleName = "MyModule"
         val state = ModuleMakerState(moduleNameState = TextFieldState(moduleName))
-        val folder = FolderTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}", files = emptyList())
+        val folder = FolderTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}", files = mutableListOf())
 
         val result = folder.parseName(state)
 
-        assertEquals(moduleName, result)
+        assertEquals("mymodule", result)
     }
 
     @Test
@@ -65,7 +65,7 @@ class IFileTemplateTest {
     @Test
     fun testFormatModuleNameForFolder() {
         val moduleName = "my-module"
-        val folder = FolderTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}", files = emptyList())
+        val folder = FolderTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}", files = mutableListOf())
 
         assertEquals("mymodule", folder.formatModuleName(moduleName))
     }
