@@ -3,7 +3,7 @@ package com.softylines.kmpwizard.ui.modulemaker.layer
 import com.softylines.kmpwizard.core.template.IFileTemplate
 import com.softylines.kmpwizard.core.template.dsl.buildIFileTemplateList
 
-class DomainMLayer: ModuleTemplate {
+class DomainMLayer : ModuleTemplate {
 
     override val name: String = "Domain"
 
@@ -14,9 +14,10 @@ class DomainMLayer: ModuleTemplate {
                 addFolderTemplate(name = "model") {
                     addFileTemplate(
                         name = "${IFileTemplate.ModuleNameKeyDollar}Model.kt",
-                        content = """                            
+                        content =
+                            """                            
                             // Add your model classes here
-                        """.trimIndent()
+                            """.trimIndent()
                     )
                 }
 
@@ -24,11 +25,12 @@ class DomainMLayer: ModuleTemplate {
                 addFolderTemplate(name = "repository") {
                     addFileTemplate(
                         name = "${IFileTemplate.ModuleNameKeyDollar}Repository.kt",
-                        content = """                            
+                        content =
+                            """                            
                             interface ${IFileTemplate.ModuleNameKeyDollar}Repository {
                                 // Add your repository methods here
                             }
-                        """.trimIndent()
+                            """.trimIndent()
                     )
                 }
             }

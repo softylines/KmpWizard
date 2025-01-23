@@ -1,5 +1,10 @@
 package com.softylines.kmpwizard.writer.module
 
+import com.softylines.kmpwizard.core.template.FileTemplate
+import com.softylines.kmpwizard.core.template.FolderTemplate
+import com.softylines.kmpwizard.core.template.IFileTemplate
+import com.softylines.kmpwizard.core.template.parseContent
+import com.softylines.kmpwizard.core.template.parseName
 import com.softylines.kmpwizard.template.buildGradleFileTemplate
 import com.softylines.kmpwizard.ui.modulemaker.ModuleMakerState
 import com.softylines.kmpwizard.ui.modulemaker.layer.ModuleTemplate
@@ -45,7 +50,7 @@ object ModuleWriter {
         // Create files
         createTemplateFiles(
             dir = srcCommonMainKotlinDir,
-            template = state.moduleLayer,
+            state = state,
         )
 
         println("Info: Module $name created successfully")
@@ -137,9 +142,46 @@ object ModuleWriter {
 
     fun createTemplateFiles(
         dir: File,
-        template: ModuleTemplate,
+        state: ModuleMakerState,
     ) {
-        template.files
+        createTemplateFiles(
+            dir = dir,
+            files = state.moduleLayer.files,
+            state = state,
+        )
+    }
+
+    fun createTemplateFiles(
+        dir: File,
+        files: List<IFileTemplate>,
+        state: ModuleMakerState,
+    ) {
+        files.forEach { fileTemplate ->
+            val file = File(dir, fileTemplate.parseName(state))
+
+            if (fileTemplate is FileTemplate) {
+                // Create the file
+                if (!file.exists())
+                    file.createNewFile()
+
+                // Write the file
+                file.writeText(
+                    text = fileTemplate.parseContent(state)
+                )
+            }
+
+            if (fileTemplate is FolderTemplate) {
+                // Create the directory
+                file.mkdirs()
+
+                // Create the files in the directory
+                createTemplateFiles(
+                    dir = file,
+                    files = fileTemplate.files,
+                    state = state,
+                )
+            }
+        }
     }
 
 }
