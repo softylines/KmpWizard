@@ -1,4 +1,4 @@
-package com.github.mohamedrejeb.kmpwizard.core.template
+package test.kmpwizard.core.template
 
 import androidx.compose.foundation.text.input.TextFieldState
 import com.softylines.kmpwizard.core.template.FileTemplate

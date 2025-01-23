@@ -1,4 +1,4 @@
-package com.github.mohamedrejeb.kmpwizard.writer.module
+package test.kmpwizard.writer.module
 
 import com.softylines.kmpwizard.writer.module.ModuleWriter
 import org.junit.After

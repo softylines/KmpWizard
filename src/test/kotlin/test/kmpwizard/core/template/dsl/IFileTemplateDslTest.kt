@@ -1,9 +1,9 @@
-package com.github.mohamedrejeb.kmpwizard.core.template.dsl
+package test.kmpwizard.core.template.dsl
 
 import com.softylines.kmpwizard.core.template.FileTemplate
 import com.softylines.kmpwizard.core.template.FolderTemplate
 import com.softylines.kmpwizard.core.template.dsl.buildIFileTemplateList
-import kotlin.test.Test
+import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 

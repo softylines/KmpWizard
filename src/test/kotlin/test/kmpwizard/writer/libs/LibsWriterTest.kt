@@ -1,4 +1,4 @@
-package com.github.mohamedrejeb.kmpwizard.writer.libs
+package test.kmpwizard.writer.libs
 
 import com.softylines.kmpwizard.core.libs.LibsLine
 import com.softylines.kmpwizard.writer.libs.LibsWriter
