@@ -103,4 +103,11 @@ object LibsLine {
 
         }
     }
+
+    fun libsLineNameToVariableName(name: String): String {
+        return name
+            .replace("-", ".")
+            .replace("_", ".")
+    }
+
 }

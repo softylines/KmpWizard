@@ -7,7 +7,7 @@ object LibsParser {
 
     fun parse(path: String): LibsFile {
         val lines = Path(path).readLines()
-        return parse(lines)
+        return parse(lines, path)
     }
 
     /**
@@ -15,8 +15,11 @@ object LibsParser {
      *
      * @param lines the lines to parse
      */
-    fun parse(lines: List<String>): LibsFile {
-        var libsFile = LibsFile()
+    fun parse(
+        lines: List<String>,
+        libsPath: String = "libs.versions.toml",
+    ): LibsFile {
+        val libsFile = LibsFile(libsPath)
 
         var blockName: String? = null
         val blockLines = mutableListOf<String>()
@@ -47,24 +50,16 @@ object LibsParser {
 
                     when (blockName) {
                         LibsUtils.VersionsName ->
-                            libsFile = libsFile.copy(
-                                versionsBlock = parseVersions(lines),
-                            )
+                            libsFile.versionsBlock = parseVersions(lines)
 
-                        LibsUtils.LibrariesName ->
-                            libsFile = libsFile.copy(
-                                librariesBlock = parseLibraries(lines),
-                            )
+                    LibsUtils.LibrariesName ->
+                            libsFile.librariesBlock = parseLibraries(lines)
 
                         LibsUtils.PluginsName ->
-                            libsFile = libsFile.copy(
-                                pluginsBlock = parsePlugins(lines),
-                            )
+                            libsFile.pluginsBlock = parsePlugins(lines)
 
                         LibsUtils.BundlesName ->
-                            libsFile = libsFile.copy(
-                                bundlesBlock = parseBundles(lines),
-                            )
+                            libsFile.bundlesBlock = parseBundles(lines)
 
                         else -> null
                     }

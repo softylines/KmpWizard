@@ -1,9 +1,11 @@
 package com.softylines.kmpwizard.ui.modulemaker.layer
 
+import com.softylines.kmpwizard.core.template.BuildGradleFileTemplate
+import com.softylines.kmpwizard.core.template.FileTemplate
 import com.softylines.kmpwizard.core.template.IFileTemplate
 import com.softylines.kmpwizard.core.template.dsl.buildIFileTemplateList
 
-class UiMLayer: ModuleTemplate {
+class UiModuleTemplate: ModuleTemplate {
 
     override val name: String = "UI"
 
@@ -18,5 +20,20 @@ class UiMLayer: ModuleTemplate {
             }
         }
     }
+
+    override val buildGradleFile: FileTemplate = BuildGradleFileTemplate(
+        content = """
+            plugins {
+                kotlin("jvm")
+                kotlin("plugin.allopen")
+            }
+            
+            kotlin {
+                sourceSets.commonMain.dependencies {
+                    implementation(compose.ui)
+                }
+            }
+        """.trimIndent()
+    )
 
 }
