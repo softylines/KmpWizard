@@ -36,7 +36,10 @@ class IFileTemplateDslImpl(
     val parent: FolderTemplate? = null
 ): IFileTemplateDsl {
     override val packageName: String? = parent?.packageName?.let {
-        "$it.${parent.name}"
+        if (it.isBlank())
+            parent.name
+        else
+            "$it.${parent.name}"
     }
 
     private val fileTemplates = mutableListOf<IFileTemplate>()
@@ -47,12 +50,8 @@ class IFileTemplateDslImpl(
         addPackage: Boolean,
     ) {
         val contentWithPackage =
-            if (addPackage && packageName != null)
-                """
-                package $packageName
-                
-                $content
-                """.trimIndent()
+            if (addPackage && packageName != null && !content.trim().startsWith("package "))
+                "package $packageName\n\n$content"
             else
                 content
 
