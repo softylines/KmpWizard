@@ -32,7 +32,7 @@ val IFileTemplate.packageName: String
     get() = parentList.joinToString(".") { it.name }
 
 fun FileTemplate.parseContent(state: ModuleMakerState): String {
-    return parseArguments(content, state)
+    return parseArguments(content.trim(), state)
 }
 
 fun IFileTemplate.parseName(state: ModuleMakerState): String {
@@ -41,7 +41,7 @@ fun IFileTemplate.parseName(state: ModuleMakerState): String {
 
 fun IFileTemplate.parseArguments(
     string: String,
-    state: ModuleMakerState
+    state: ModuleMakerState,
 ): String {
     var dollarCount = string.count { it == '$' }
 
@@ -52,9 +52,16 @@ fun IFileTemplate.parseArguments(
 
     var i = 0
 
+    val isStartWithPackage = string.startsWith("package ")
+    val firstLineBreakIndex = string.indexOf('\n')
+
     while (true) {
         val startDollarIndex = string.indexOf('$', i)
         val endDollarIndex = string.indexOf('$', startDollarIndex + 1)
+
+        val isLowercaseArgument =
+            isStartWithPackage &&
+                    (firstLineBreakIndex == -1 || endDollarIndex < firstLineBreakIndex)
 
         if (startDollarIndex == -1 || endDollarIndex == -1) {
             stringBuilder.append(string.substring(i))
@@ -71,7 +78,12 @@ fun IFileTemplate.parseArguments(
                 string.substring(startDollarIndex + 1, endDollarIndex)
 
         if (variable == ModuleNameKey)
-            stringBuilder.append(formatModuleName(state.moduleNameState.text.toString()))
+            stringBuilder.append(
+                formatModuleName(
+                    moduleName = state.moduleNameState.text.toString(),
+                    isLowercase = isLowercaseArgument
+                )
+            )
         else
             stringBuilder.append(string.substring(startDollarIndex, endDollarIndex + 1))
 
@@ -81,7 +93,10 @@ fun IFileTemplate.parseArguments(
     return stringBuilder.toString()
 }
 
-fun IFileTemplate.formatModuleName(moduleName: String): String {
+fun IFileTemplate.formatModuleName(
+    moduleName: String,
+    isLowercase: Boolean = false,
+): String {
     val isFile = this is FileTemplate
     val stringBuilder = StringBuilder()
     var currentSequence = ""
@@ -101,7 +116,7 @@ fun IFileTemplate.formatModuleName(moduleName: String): String {
                 .trim()
                 .lowercase()
                 .replaceFirstChar {
-                    if (isFile)
+                    if (isFile && !isLowercase)
                         it.uppercaseChar()
                     else
                         it

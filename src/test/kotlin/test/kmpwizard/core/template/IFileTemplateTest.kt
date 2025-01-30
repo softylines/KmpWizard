@@ -5,6 +5,7 @@ import com.softylines.kmpwizard.core.template.FileTemplate
 import com.softylines.kmpwizard.core.template.FolderTemplate
 import com.softylines.kmpwizard.core.template.IFileTemplate
 import com.softylines.kmpwizard.core.template.formatModuleName
+import com.softylines.kmpwizard.core.template.parseContent
 import com.softylines.kmpwizard.core.template.parseName
 import com.softylines.kmpwizard.ui.modulemaker.ModuleMakerState
 import kotlin.test.Test
@@ -63,11 +64,42 @@ class IFileTemplateTest {
     }
 
     @Test
+    fun testFormatModuleNameForFileWithLowercaseFlag() {
+        val moduleName = "my-module"
+        val file = FileTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}Repository")
+
+        assertEquals("mymodule", file.formatModuleName(moduleName, isLowercase = true))
+    }
+
+    @Test
     fun testFormatModuleNameForFolder() {
         val moduleName = "my-module"
         val folder = FolderTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}", files = mutableListOf())
 
         assertEquals("mymodule", folder.formatModuleName(moduleName))
+    }
+
+    @Test
+    fun testFormatFileContent() {
+        val moduleName = "profile"
+        val state = ModuleMakerState(moduleNameState = TextFieldState(moduleName))
+        val file = FileTemplate(
+            name = "${IFileTemplate.ModuleNameKeyDollar}Repository.kt",
+            content =
+                """                            
+                interface ${IFileTemplate.ModuleNameKeyDollar}Repository {
+                }
+                """.trimIndent()
+        )
+
+        val result = file.parseContent(ModuleMakerState(moduleNameState = TextFieldState(moduleName)))
+
+        assertEquals(
+            """
+            interface ProfileRepository {
+            }
+            """.trimIndent(), result
+        )
     }
 
 }

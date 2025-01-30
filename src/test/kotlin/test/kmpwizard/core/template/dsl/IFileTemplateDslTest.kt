@@ -1,9 +1,13 @@
 package test.kmpwizard.core.template.dsl
 
+import androidx.compose.foundation.text.input.TextFieldState
 import com.softylines.kmpwizard.core.template.FileTemplate
 import com.softylines.kmpwizard.core.template.FolderTemplate
+import com.softylines.kmpwizard.core.template.IFileTemplate
 import com.softylines.kmpwizard.core.template.dsl.buildIFileTemplateList
-import org.junit.Test
+import com.softylines.kmpwizard.core.template.parseContent
+import com.softylines.kmpwizard.ui.modulemaker.ModuleMakerState
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
@@ -52,6 +56,68 @@ class IFileTemplateDslTest {
         folder2.files.forEach {
             assertIs<FileTemplate>(it)
         }
+    }
+
+    @Test
+    fun testAddPackageToFileContent() {
+        val moduleName = "profile"
+        val state = ModuleMakerState(moduleNameState = TextFieldState(moduleName))
+        val files = buildIFileTemplateList {
+            addFolderTemplate(name = "repository") {
+                addFileTemplate(
+                    name = "${IFileTemplate.ModuleNameKeyDollar}Repository.kt",
+                    content =
+                        """                            
+                        interface ${IFileTemplate.ModuleNameKeyDollar}Repository {
+                        }
+                        """.trimIndent()
+                )
+            }
+        }
+
+        val file = (files.first() as FolderTemplate).files.first() as FileTemplate
+
+        assertEquals(
+            """
+            package repository
+
+            interface ProfileRepository {
+            }
+            """.trimIndent(),
+            file.parseContent(state)
+        )
+    }
+
+    @Test
+    fun testAddPackageToFileContentWithPackage() {
+        val moduleName = "profile"
+        val state = ModuleMakerState(moduleNameState = TextFieldState(moduleName))
+        val files = buildIFileTemplateList {
+            addFolderTemplate(name = IFileTemplate.ModuleNameKeyDollar) {
+                addFolderTemplate(name = "repository") {
+                    addFileTemplate(
+                        name = "${IFileTemplate.ModuleNameKeyDollar}Repository.kt",
+                        content =
+                            """                            
+                        interface ${IFileTemplate.ModuleNameKeyDollar}Repository {
+                        }
+                        """.trimIndent()
+                    )
+                }
+            }
+        }
+
+        val file = ((files.first() as FolderTemplate).files.first() as FolderTemplate).files.first() as FileTemplate
+
+        assertEquals(
+            """
+            package profile.repository
+
+            interface ProfileRepository {
+            }
+            """.trimIndent(),
+            file.parseContent(state)
+        )
     }
 
 }
