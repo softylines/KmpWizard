@@ -7,10 +7,7 @@ package com.softylines.kmpwizard.core.libs
  * @return true if the libs file has a version with the given name, false otherwise
  */
 fun LibsFile.hasVersion(ref: String): Boolean {
-    if (versionsBlock == null)
-        return false
-
-    return versionsBlock.lines.any { it.name == ref }
+   return versionsBlock?.let { it.lines.any { it.name == ref } } == true
 }
 
 /**
@@ -39,10 +36,7 @@ fun LibsFile.getVersion(versionType: LibsLine.VersionType?): String? {
  * @return true if the libs file has a library with the given module, false otherwise
  */
 fun LibsFile.hasLibrary(module: String): Boolean {
-    if (librariesBlock == null)
-        return false
-
-    return librariesBlock.lines.any { it.module == module }
+    return librariesBlock?.let { it.lines.any { it.module == module } } == true
 }
 
 /**
@@ -52,10 +46,7 @@ fun LibsFile.hasLibrary(module: String): Boolean {
  * @return the library with the given module or null
  */
 fun LibsFile.getLibrary(module: String): LibsLine.Library? {
-    if (librariesBlock == null)
-        return null
-
-    return librariesBlock.lines.firstOrNull { it.module == module }
+    return librariesBlock?.lines?.firstOrNull { it.module == module }
 }
 
 /**
@@ -65,10 +56,7 @@ fun LibsFile.getLibrary(module: String): LibsLine.Library? {
  * @return true if the libs file has a plugin with the given id, false otherwise
  */
 fun LibsFile.hasPlugin(pluginId: String): Boolean {
-    if (pluginsBlock == null)
-        return false
-
-    return pluginsBlock.lines.any { it.id == pluginId }
+    return pluginsBlock?.let { it.lines.any { it.id == pluginId } } == true
 }
 
 /**
@@ -78,8 +66,5 @@ fun LibsFile.hasPlugin(pluginId: String): Boolean {
  * @return the plugin with the given id or null
  */
 fun LibsFile.getPlugin(pluginId: String): LibsLine.Plugin? {
-    if (pluginsBlock == null)
-        return null
-
-    return pluginsBlock.lines.firstOrNull { it.id == pluginId }
+    return pluginsBlock?.lines?.firstOrNull { it.id == pluginId }
 }

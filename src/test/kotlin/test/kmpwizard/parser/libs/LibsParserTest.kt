@@ -86,10 +86,10 @@ class LibsParserTest {
         assertNotNull(libsFile.librariesBlock)
         assertNotNull(libsFile.pluginsBlock)
         assertNull(libsFile.bundlesBlock)
-
-        assert(libsFile.versionsBlock.lines == expectedVersionsBlock.lines)
-        assert(libsFile.librariesBlock.lines == expectedLibrariesBlock.lines)
-        assert(libsFile.pluginsBlock.lines == expectedPluginsBlock.lines)
+        
+        assert(libsFile.versionsBlock!!.lines == expectedVersionsBlock.lines)
+        assert(libsFile.librariesBlock!!.lines == expectedLibrariesBlock.lines)
+        assert(libsFile.pluginsBlock!!.lines == expectedPluginsBlock.lines)
     }
 
     fun removeWhitespaces(line: String): String {
