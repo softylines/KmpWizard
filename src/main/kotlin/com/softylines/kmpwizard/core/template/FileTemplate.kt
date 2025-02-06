@@ -5,3 +5,12 @@ data class FileTemplate(
     override val parent: FolderTemplate? = null,
     val content: String = "",
 ): IFileTemplate
+
+fun BuildGradleFileTemplate(
+    content: String,
+): FileTemplate {
+    return FileTemplate(
+        name = "build.gradle.kts",
+        content = content,
+    )
+}
