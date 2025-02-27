@@ -12,9 +12,11 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.ui.JBDimension
-import com.softylines.kmpwizard.template.generateDemoMdFileTemplate
+import com.softylines.kmpwizard.core.utils.State
+import com.softylines.kmpwizard.parser.conventionplugins.ConventionPluginParser
+import com.softylines.kmpwizard.parser.libs.LibsParser
+import com.softylines.kmpwizard.writer.conventionplugins.ConventionPluginWriter
 import com.softylines.kmpwizard.writer.module.ModuleWriter
-import fleet.rpc.core.retry
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,19 +26,21 @@ import org.jetbrains.jewel.foundation.ExperimentalJewelApi
 import org.jetbrains.jewel.foundation.enableNewSwingCompositing
 import java.awt.event.ActionEvent
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
 import javax.swing.AbstractAction
 import javax.swing.Action
 import javax.swing.JComponent
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.Throws
+import kotlin.system.measureNanoTime
+import kotlin.system.measureTimeMillis
 
 private const val WINDOW_WIDTH = 840
 private const val WINDOW_HEIGHT = 600
 
 class ModuleMakerDialogWrapper(
     private val project: Project,
-    private val startingLocation: VirtualFile?
+    private val startingLocation: VirtualFile?,
 ) : DialogWrapper(project), CoroutineScope {
 
     override val coroutineContext: CoroutineContext = SupervisorJob() + Dispatchers.EDT + CoroutineName("ComposeWizard")
@@ -53,11 +57,17 @@ class ModuleMakerDialogWrapper(
 
     private fun onEvent(event: ModuleMakerEvent) {
         when (event) {
-            is ModuleMakerEvent.OnLayerSelected ->
-                onLayerSelected(event)
+            is ModuleMakerEvent.OnToggleLayer ->
+                onToggleLayer(event)
 
             is ModuleMakerEvent.OnCreateModule ->
                 onCreateModule()
+
+            is ModuleMakerEvent.HasConventionPlugin ->
+                hasConventionPlugin()
+
+            is ModuleMakerEvent.InitConventionPlugin ->
+                initConventionPlugin()
         }
     }
 
@@ -68,7 +78,7 @@ class ModuleMakerDialogWrapper(
         return JewelComposePanel {
             ModuleMakerDialogContent(
                 state = state,
-                onEvent= ::onEvent,
+                onEvent = ::onEvent,
             )
         }
             .apply { minimumSize = JBDimension(WINDOW_WIDTH, WINDOW_HEIGHT) }
@@ -135,7 +145,7 @@ class ModuleMakerDialogWrapper(
      */
     private fun refreshFileSystem(
         settingsGradleFile: File,
-        currentlySelectedFile: File
+        currentlySelectedFile: File,
     ) {
         VfsUtil.markDirtyAndRefresh(
             false,
@@ -146,8 +156,22 @@ class ModuleMakerDialogWrapper(
         )
     }
 
-    private fun onLayerSelected(event: ModuleMakerEvent.OnLayerSelected) {
-        state = state.copy(moduleLayer = event.layer)
+    private fun onToggleLayer(event: ModuleMakerEvent.OnToggleLayer) {
+        val isSelected = event.layer in state.moduleTemplateList
+
+        val moduleTemplateList =
+            when {
+                isSelected && state.moduleTemplateList.size == 1 ->
+                    state.moduleTemplateList
+
+                isSelected ->
+                    state.moduleTemplateList - event.layer
+
+                else ->
+                    state.moduleTemplateList + event.layer
+            }
+
+        state = state.copy(moduleTemplateList = moduleTemplateList)
     }
 
     private fun onCreateModule() {
@@ -162,25 +186,130 @@ class ModuleMakerDialogWrapper(
         val rootDirectory = File(rootDirectoryString())
 
         if (!rootDirectory.exists())
-            // Todo: Show error message (Notification, ui message, etc)
+        // Todo: Show error message (Notification, ui message, etc)
             return
 
         // Create module directory
         // Todo: Support nested modules
         // Todo: Support layers
-        val moduleDirectory = ModuleWriter.createModule(
+        val moduleDirectoryList = ModuleWriter.createModuleList(
             state = state,
             parentDirectory = rootDirectory,
             settingsGradleFile = settingsGradleFile,
-        ) ?: return
+        )
 
         // Refresh and Sync Project
-        refreshFileSystem(
-            settingsGradleFile = settingsGradleFile,
-            currentlySelectedFile = moduleDirectory,
-        )
+        moduleDirectoryList.forEach { moduleDirectory ->
+            refreshFileSystem(
+                settingsGradleFile = settingsGradleFile,
+                currentlySelectedFile = moduleDirectory,
+            )
+        }
 //        if (preferenceService.preferenceState.refreshOnModuleAdd) {
-            syncProject()
+        syncProject()
 //        }
+    }
+
+    private fun hasConventionPlugin() {
+        state = state.copy(
+            conventionPlugins = State.loading()
+        )
+
+        runCatching {
+            val rootDirectory = File(rootDirectoryString())
+
+            if (!rootDirectory.exists()) {
+                state = state.copy(
+                    conventionPlugins = State.failure(
+                        message = "Root directory does not exist"
+                    )
+                )
+                return
+            }
+
+            val conventionPluginsDirectory = File(rootDirectory, "convention-plugins")
+
+            if (!conventionPluginsDirectory.exists()) {
+                state = state.copy(
+                    conventionPlugins = State.failure(
+                        message = "Convention plugins directory does not exist"
+                    )
+                )
+                return
+            }
+
+            ConventionPluginParser.listConventionPlugins(conventionPluginsDirectory)
+        }
+            .onSuccess { conventionPlugins ->
+                state = state.copy(
+                    conventionPlugins = State.success(conventionPlugins)
+                )
+            }
+            .onFailure { 
+                state = state.copy(
+                    conventionPlugins = State.failure(
+                        message = it.message
+                    )
+                )
+            }
+    }
+
+    private fun initConventionPlugin() {
+        state = state.copy(
+            conventionPlugins = State.loading()
+        )
+
+        runCatching {
+            val rootDirectory = File(rootDirectoryString())
+
+            if (!rootDirectory.exists()) {
+                state = state.copy(
+                    conventionPlugins = State.failure(
+                        message = "Root directory does not exist"
+                    )
+                )
+                return
+            }
+
+            val conventionPluginsDirectory = File(rootDirectory, "convention-plugins")
+            val libsVersionsFile = File(rootDirectory, "gradle/libs.versions.toml")
+
+            if (!libsVersionsFile.exists()) {
+                state = state.copy(
+                    conventionPlugins = State.failure(
+                        message = "libs.versions.toml file does not exist"
+                    )
+                )
+                return
+            }
+
+            val libsFile = LibsParser.parse(libsVersionsFile.absolutePath)
+
+            ConventionPluginWriter.initConventionPluginModule(
+                libsFile = libsFile,
+                conventionPluginDirectory = conventionPluginsDirectory
+            )
+
+            val conventionPlugins = ConventionPluginParser.listConventionPlugins(conventionPluginsDirectory)
+
+            refreshFileSystem(
+                settingsGradleFile = getSettingsGradleFile() ?: return,
+                currentlySelectedFile = conventionPluginsDirectory
+            )
+
+            conventionPlugins
+        }
+            .onSuccess { conventionPlugins ->
+                state = state.copy(
+                    conventionPlugins = State.success(conventionPlugins)
+                )
+            }
+            .onFailure {
+                state = state.copy(
+                    conventionPlugins = State.failure(
+                        message = it.message
+                    )
+                )
+            }
     }
 }

@@ -4,10 +4,15 @@ import com.softylines.kmpwizard.core.template.BuildGradleFileTemplate
 import com.softylines.kmpwizard.core.template.FileTemplate
 import com.softylines.kmpwizard.core.template.IFileTemplate
 import com.softylines.kmpwizard.core.template.dsl.buildIFileTemplateList
+import org.jetbrains.jewel.ui.icon.IconKey
+import org.jetbrains.jewel.ui.icons.AllIconsKeys
+import kotlin.io.path.Path
 
 class UiModuleTemplate: ModuleTemplate {
 
     override val name: String = "UI"
+    override val parent: String = ":ui"
+    override val iconKey: IconKey = AllIconsKeys.Ide.Pipette
 
     override val files: List<IFileTemplate> = buildIFileTemplateList {
         addFolderTemplate(name = "ui") {
@@ -24,8 +29,7 @@ class UiModuleTemplate: ModuleTemplate {
     override val buildGradleFile: FileTemplate = BuildGradleFileTemplate(
         content = """
             plugins {
-                kotlin("jvm")
-                kotlin("plugin.allopen")
+                id("compose.mp")
             }
             
             kotlin {

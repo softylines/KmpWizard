@@ -5,11 +5,11 @@ import com.softylines.kmpwizard.core.template.FolderTemplate
 import com.softylines.kmpwizard.core.template.IFileTemplate
 import com.softylines.kmpwizard.core.template.parseContent
 import com.softylines.kmpwizard.core.template.parseName
-import com.softylines.kmpwizard.template.buildGradleFileTemplate
 import com.softylines.kmpwizard.ui.modulemaker.ModuleMakerState
 import com.softylines.kmpwizard.ui.modulemaker.layer.ModuleTemplate
 import java.io.File
 import java.nio.file.Files
+import kotlin.io.path.Path
 import kotlin.text.isNotBlank
 
 object ModuleWriter {
@@ -17,17 +17,36 @@ object ModuleWriter {
     /**
      * Create a new module
      *
-     * @param name The name of the module
+     * @param state The module maker state
      * @param parentDirectory The parent directory of the module
      * @param settingsGradleFile The settings.gradle.kts file
      * @return The module directory
      */
-    fun createModule(
+    fun createModuleList(
         state: ModuleMakerState,
         parentDirectory: File,
         settingsGradleFile: File,
+    ): List<File> {
+        return state.moduleTemplateList.mapNotNull { moduleTemplate ->
+            createModuleList(
+                state = state,
+                moduleTemplate = moduleTemplate,
+                parentDirectory = parentDirectory,
+                settingsGradleFile = settingsGradleFile,
+            )
+        }
+    }
+
+    fun createModuleList(
+        state: ModuleMakerState,
+        moduleTemplate: ModuleTemplate,
+        parentDirectory: File,
+        settingsGradleFile: File,
     ): File? {
-        val name = state.moduleNameState.text.toString()
+        val name = getModuleName(
+            state = state,
+            moduleTemplate = moduleTemplate,
+        )
 
         // Create the module directory
         val moduleDirectory = getModuleDirectory(
@@ -42,7 +61,11 @@ object ModuleWriter {
         )
 
         // Add build.gradle.kts file
-        addModuleBuildGradleFile(moduleDirectory)
+        addModuleBuildGradleFile(
+            moduleDirectory = moduleDirectory,
+            state = state,
+            moduleTemplate = moduleTemplate,
+        )
 
         // Add src/commonMain/kotlin directory
         val srcCommonMainKotlinDir = addModuleSrcCommonMainKotlin(moduleDirectory)
@@ -51,6 +74,7 @@ object ModuleWriter {
         createTemplateFiles(
             dir = srcCommonMainKotlinDir,
             state = state,
+            moduleTemplate = moduleTemplate,
         )
 
         println("Info: Module $name created successfully")
@@ -58,11 +82,33 @@ object ModuleWriter {
         return moduleDirectory
     }
 
+    fun getModuleName(
+        state: ModuleMakerState,
+        moduleTemplate: ModuleTemplate
+    ): String {
+        val name = (moduleTemplate.parent + ":" + state.moduleNameState.text)
+            .split(":")
+            .filter { it.isNotBlank() }
+            .joinToString(
+                separator = ":",
+                prefix = ":"
+            )
+
+        return name
+    }
+
     fun getModuleDirectory(
         name: String,
         parentDirectory: File,
     ): File? {
-        val moduleDirectory = File(parentDirectory, name)
+
+        val pathParts = name
+            .split(":")
+            .filter { it.isNotBlank() }
+
+        val moduleDirectory =
+            Path(parentDirectory.absolutePath, *pathParts.toTypedArray())
+                .toFile()
 
         // Todo: Check whether the module already exists
         if (moduleDirectory.exists())
@@ -109,7 +155,7 @@ object ModuleWriter {
 
         val newIncludeLineIndex = lastIncludeIndex + 1
 
-        lines.add(newIncludeLineIndex, "include(\":${moduleName}\")")
+        lines.add(newIncludeLineIndex, "include(\":${moduleName.removePrefix(":")}\")")
 
         Files.write(
             settingsGradleFile.toPath(),
@@ -119,6 +165,8 @@ object ModuleWriter {
 
     fun addModuleBuildGradleFile(
         moduleDirectory: File,
+        state: ModuleMakerState,
+        moduleTemplate: ModuleTemplate,
     ) {
         val buildGradleFile = File(moduleDirectory, "build.gradle.kts")
 
@@ -126,7 +174,9 @@ object ModuleWriter {
         buildGradleFile.createNewFile()
 
         // Write the build.gradle.kts file
-        buildGradleFile.writeText(buildGradleFileTemplate())
+        buildGradleFile.writeText(
+            text = moduleTemplate.buildGradleFile.parseContent(state)
+        )
     }
 
     fun addModuleSrcCommonMainKotlin(
@@ -143,10 +193,11 @@ object ModuleWriter {
     fun createTemplateFiles(
         dir: File,
         state: ModuleMakerState,
+        moduleTemplate: ModuleTemplate,
     ) {
         createTemplateFiles(
             dir = dir,
-            files = state.moduleLayer.files,
+            files = moduleTemplate.files,
             state = state,
         )
     }
