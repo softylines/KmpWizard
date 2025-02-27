@@ -80,7 +80,7 @@ fun IFileTemplate.parseArguments(
         if (variable == ModuleNameKey)
             stringBuilder.append(
                 formatModuleName(
-                    moduleName = state.moduleNameState.text.toString(),
+                    moduleName = state.moduleNameState.text.split(':').last(),
                     isLowercase = isLowercaseArgument
                 )
             )

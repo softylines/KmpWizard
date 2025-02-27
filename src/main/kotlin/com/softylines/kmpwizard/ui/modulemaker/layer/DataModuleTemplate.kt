@@ -4,10 +4,16 @@ import com.softylines.kmpwizard.core.template.BuildGradleFileTemplate
 import com.softylines.kmpwizard.core.template.FileTemplate
 import com.softylines.kmpwizard.core.template.IFileTemplate
 import com.softylines.kmpwizard.core.template.dsl.buildIFileTemplateList
+import org.jetbrains.jewel.ui.icon.IconKey
+import org.jetbrains.jewel.ui.icon.IntelliJIconKey
+import org.jetbrains.jewel.ui.icons.AllIconsKeys
+import kotlin.io.path.Path
 
 class DataModuleTemplate: ModuleTemplate {
 
     override val name: String = "Data"
+    override val parent: String = ":data"
+    override val iconKey: IconKey = AllIconsKeys.Nodes.Folder
 
     /**
      * data
@@ -17,7 +23,7 @@ class DataModuleTemplate: ModuleTemplate {
      */
     override val files: List<IFileTemplate> = buildIFileTemplateList {
         addFolderTemplate(name = "data") {
-            addFolderTemplate(name = "${IFileTemplate.ModuleNameKeyDollar}") {
+            addFolderTemplate(name = IFileTemplate.ModuleNameKeyDollar) {
                 // di
                 addFolderTemplate(name = "di") {
                     addFileTemplate(
@@ -63,13 +69,12 @@ class DataModuleTemplate: ModuleTemplate {
     override val buildGradleFile: FileTemplate = BuildGradleFileTemplate(
         content = """
             plugins {
-                kotlin("jvm")
-                kotlin("plugin.allopen")
+                id("data.layer")
             }
             
             kotlin {
                 sourceSets.commonMain.dependencies {
-                    implementation(compose.ui)
+                    
                 }
             }
         """.trimIndent()

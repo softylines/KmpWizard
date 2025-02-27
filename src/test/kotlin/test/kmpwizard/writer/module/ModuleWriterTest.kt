@@ -1,5 +1,8 @@
 package test.kmpwizard.writer.module
 
+import androidx.compose.foundation.text.input.TextFieldState
+import com.softylines.kmpwizard.ui.modulemaker.ModuleMakerState
+import com.softylines.kmpwizard.ui.modulemaker.layer.ModuleTemplate
 import com.softylines.kmpwizard.writer.module.ModuleWriter
 import org.junit.After
 import org.junit.Before
@@ -30,6 +33,21 @@ class ModuleWriterTest {
     }
 
     @Test
+    fun `test get module name`() {
+        val state = ModuleMakerState(
+            moduleNameState = TextFieldState("profile"),
+            moduleTemplateList = setOf(ModuleTemplate.Ui),
+        )
+
+        val moduleName = ModuleWriter.getModuleName(
+            state = state,
+            moduleTemplate = ModuleTemplate.Ui,
+        )
+
+        assertEquals(":ui:profile", moduleName)
+    }
+
+    @Test
     fun `test add module build gradle file`() {
         val moduleName = "profile"
         val moduleDirectory = ModuleWriter.getModuleDirectory(
@@ -40,7 +58,12 @@ class ModuleWriterTest {
         assertNotNull(moduleDirectory)
 
         ModuleWriter.addModuleBuildGradleFile(
-            moduleDirectory = moduleDirectory
+            moduleDirectory = moduleDirectory,
+            state = ModuleMakerState(
+                moduleNameState = TextFieldState("profile"),
+                moduleTemplateList = setOf(ModuleTemplate.Ui),
+            ),
+            moduleTemplate = ModuleTemplate.Ui,
         )
 
         val buildGradleFile = File(moduleDirectory, "build.gradle.kts")

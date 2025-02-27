@@ -3,144 +3,102 @@ package com.softylines.kmpwizard.ui.modulemaker
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.softylines.kmpwizard.ui.modulemaker.components.AddModuleSection
+import com.softylines.kmpwizard.ui.modulemaker.components.ConventionPluginSection
+import com.softylines.kmpwizard.ui.modulemaker.components.ModuleTemplateChip
 import com.softylines.kmpwizard.ui.modulemaker.layer.ModuleTemplate
 import org.jetbrains.jewel.foundation.modifier.onActivated
 import org.jetbrains.jewel.foundation.modifier.trackActivation
+import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.*
+import org.jetbrains.jewel.ui.icon.IconKey
+import org.jetbrains.jewel.ui.icons.AllIconsKeys
+import org.jetbrains.jewel.ui.theme.defaultTabStyle
+import org.jetbrains.jewel.ui.theme.editorTabStyle
+import org.jetbrains.jewel.ui.util.thenIf
+import kotlin.math.max
 
+private enum class ModuleMakerTab {
+    AddModule,
+    ConventionPlugins,
+    Templates;
+
+    val title: String
+        get() = when (this) {
+            AddModule -> "Add Module"
+            ConventionPlugins -> "Convention Plugins"
+            Templates -> "Templates"
+        }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ModuleMakerDialogContent(
     state: ModuleMakerState,
     onEvent: (ModuleMakerEvent) -> Unit,
 ) {
+    var selectedTab by remember { mutableStateOf(ModuleMakerTab.AddModule) }
+
+    val tabs =
+        remember(selectedTab) {
+            ModuleMakerTab.entries.map { tab ->
+                TabData.Default(
+                    selected = tab == selectedTab,
+                    content = { tabState ->
+                        SimpleTabContent(
+                            state = tabState,
+                            modifier = Modifier,
+                            icon = {
+                                Icon(
+                                    key = AllIconsKeys.Actions.Find,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp).tabContentAlpha(state = tabState),
+                                    tint = Color.Cyan,
+                                )
+                            },
+                            label = { Text(tab.title) },
+                        )
+                    },
+                    closable = false,
+                    onClick = { selectedTab = tab },
+                )
+            }
+        }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier
             .trackActivation()
     ) {
-        var activated by remember { mutableStateOf(false) }
-
-        Text(
-            text = "Create new module:",
-            style = Typography.h3TextStyle(),
-            modifier = Modifier.onActivated { activated = it },
+        // Tabs
+        TabStrip(
+            tabs = tabs,
+            style = JewelTheme.editorTabStyle,
+            modifier = Modifier.fillMaxWidth()
         )
 
-        TextField(
-            state = state.moduleNameState,
-            placeholder = { Text("Enter module name") },
-            modifier = Modifier.width(200.dp),
-        )
+        when (selectedTab) {
+            ModuleMakerTab.AddModule ->
+                AddModuleSection(
+                    state = state,
+                    onEvent = onEvent,
+                    modifier = Modifier
+                        .weight(1f)
+                )
 
-        TextField(
-            state = state.packageNameState,
-            placeholder = { Text("Enter package name") },
-            modifier = Modifier.width(200.dp),
-        )
+            ModuleMakerTab.ConventionPlugins ->
+                ConventionPluginSection(
+                    state = state,
+                    onEvent = onEvent,
+                    modifier = Modifier
+                        .weight(1f)
+                )
 
-        val options = remember {
-            listOf(
-                ModuleTemplate.Ui,
-                ModuleTemplate.Data,
-                ModuleTemplate.Domain,
-            )
+            ModuleMakerTab.Templates ->
+                Text("")
         }
-
-        Dropdown(
-            menuContent = {
-                options.forEach { layer ->
-                    selectableItem(
-                        selected = state.moduleLayer == layer,
-                        onClick = {
-                            onEvent(ModuleMakerEvent.OnLayerSelected(layer))
-                        }
-                    ) {
-                        Text(
-                            text = layer.name,
-                        )
-                    }
-                }
-            }
-        ) {
-            Text(state.moduleLayer.name)
-        }
-
-//        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-//            var clicks1 by remember { mutableIntStateOf(0) }
-//            OutlinedButton({ clicks1++ }) { Text("Outlined: $clicks1") }
-//            OutlinedButton({}, enabled = false) { Text("Outlined") }
-//
-//            var clicks2 by remember { mutableIntStateOf(0) }
-//            DefaultButton({ clicks2++ }) { Text("Default: $clicks2") }
-//            DefaultButton({}, enabled = false) { Text("Default") }
-//        }
-
-//        val state = rememberTextFieldState("")
-//        TextField(
-//            state = state,
-//            modifier =
-//                Modifier.width(200.dp).provideData {
-//                    set(ActionSystemTestAction.COMPONENT_DATA_KEY.name, "TextField")
-//                    lazy(ActionSystemTestAction.COMPONENT_DATA_KEY.name) { Math.random().toString() }
-//                },
-//            placeholder = { Text("Write something...") },
-//        )
-//
-//        var checked by remember { mutableStateOf(false) }
-//        var validated by remember { mutableStateOf(false) }
-//        val outline = if (validated) Outline.Error else Outline.None
-//
-//        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-//            CheckboxRow(
-//                checked = checked,
-//                onCheckedChange = { checked = it },
-//                outline = outline,
-//                modifier = Modifier.provideData { set(ActionSystemTestAction.COMPONENT_DATA_KEY.name, "Checkbox") },
-//            ) {
-//                Text("Hello, I am a themed checkbox")
-//            }
-//
-//            CheckboxRow(checked = validated, onCheckedChange = { validated = it }) { Text("Show validation") }
-//        }
-//
-//        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-//            var index by remember { mutableIntStateOf(0) }
-//            RadioButtonRow(selected = index == 0, onClick = { index = 0 }, outline = outline) {
-//                Text("I am number one")
-//            }
-//            RadioButtonRow(selected = index == 1, onClick = { index = 1 }, outline = outline) { Text("Sad second") }
-//        }
-
-//        IconsShowcase()
-
-//        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-//            Text("Circular progress small:")
-//            CircularProgressIndicator()
-//        }
-//
-//        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-//            Text("Circular progress big:")
-//            CircularProgressIndicatorBig()
-//        }
-//
-//        Row(verticalAlignment = Alignment.CenterVertically) {
-//            Tooltip(
-//                tooltip = {
-//                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-//                        Icon(key = AllIconsKeys.General.ShowInfos, contentDescription = null)
-//                        Text("This is a tooltip")
-//                    }
-//                }
-//            ) {
-//                Text(
-//                    modifier = Modifier.border(1.dp, JewelTheme.globalColors.borders.normal).padding(12.dp, 8.dp),
-//                    text = "Hover Me!",
-//                )
-//            }
-//        }
-//
-//        var sliderValue by remember { mutableFloatStateOf(.15f) }
-//        Slider(sliderValue, { sliderValue = it }, steps = 5)
     }
 }

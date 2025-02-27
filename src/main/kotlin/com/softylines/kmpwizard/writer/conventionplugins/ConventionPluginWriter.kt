@@ -12,33 +12,6 @@ import kotlin.io.path.pathString
 
 object ConventionPluginWriter {
 
-    fun hasConventionPlugin(
-        conventionPluginDirectory: File,
-    ): Boolean {
-        return conventionPluginDirectory.exists()
-    }
-
-    fun listConventionPlugins(
-        conventionPluginDirectory: File,
-    ): List<String> {
-        val conventionPluginFilesDirectory = Path(
-            conventionPluginDirectory.absolutePath,
-            "src",
-            "main",
-            "kotlin",
-        )
-
-        return conventionPluginFilesDirectory
-            .toFile()
-            .listFiles()
-            .orEmpty()
-            .filter {
-                println("it.extension: ${it.extension}")
-                it.isFile && it.name.endsWith(".gradle.kts")
-            }
-            .map { it.nameWithoutExtension }
-    }
-
     fun writeConventionPlugin(
         conventionPluginDirectory: File,
         conventionPluginFileTemplates: List<FileTemplate>,
@@ -85,8 +58,15 @@ object ConventionPluginWriter {
 
         conventionPluginFilesDirectory.toFile().mkdirs()
 
-        // Todo: Create convention plugin files
+        writeConventionPlugin(
+            conventionPluginDirectory = conventionPluginDirectory,
+            conventionPluginFileTemplates = kotlinConventionPluginFileTemplates
+        )
 
+        writeConventionPlugin(
+            conventionPluginDirectory = conventionPluginDirectory,
+            conventionPluginFileTemplates = composeConventionPluginFileTemplates
+        )
     }
 
     fun createBuildGradleFile(
@@ -171,5 +151,149 @@ object ConventionPluginWriter {
             """.trimIndent()
         )
     }
+
+    private val kotlinConventionPluginFileTemplates = listOf(
+        FileTemplate(
+            name = "kotlin.mp.gradle.kts",
+            content = """
+                plugins {
+                    `kotlin-multiplatform`
+                    id("android.lib")
+                }
+                
+                kotlin {
+                    applyHierarchyTemplate()
+                    applyTargets()
+                }
+            """.trimIndent()
+        ),
+        FileTemplate(
+            name = "Hirearchy.kt",
+            content = """
+                import org.gradle.api.NamedDomainObjectContainer
+                import org.gradle.api.NamedDomainObjectProvider
+                import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+                import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+                import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+
+                @OptIn(ExperimentalKotlinGradlePluginApi::class)
+                fun KotlinMultiplatformExtension.applyHierarchyTemplate() {
+                    applyDefaultHierarchyTemplate {
+                        common {
+                            group("skiko") {
+                                withJvm()
+                                withIos()
+                            }
+
+                            group("nonDesktop") {
+                                withIos()
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        ),
+        FileTemplate(
+            name = "Targets.kt",
+            content = """
+                import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+
+                fun KotlinMultiplatformExtension.applyTargets() {
+                    targets {
+                        jvm("desktop")
+                        ios()
+                    }
+                }
+            """.trimIndent()
+        ),
+        FileTemplate(
+            name = "Android.kt",
+            content = """
+                import com.android.build.api.dsl.LibraryExtension
+                import org.gradle.accessors.dm.LibrariesForLibs
+                import org.gradle.api.JavaVersion
+                import org.gradle.api.Project
+                import org.gradle.kotlin.dsl.configure
+                import org.gradle.kotlin.dsl.get
+                import org.gradle.kotlin.dsl.the
+
+                fun Project.androidLibrarySetup() {
+                    val libs = the<LibrariesForLibs>()
+
+                    extensions.configure<LibraryExtension> {
+                        namespace = group.toString() + path.replace("-", "").split(":").joinToString(".")
+                        compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+                        sourceSets["main"].res.srcDirs("src/androidMain/res")
+                        sourceSets["main"].resources.srcDirs("src/commonMain/resources")
+
+                        defaultConfig {
+                            minSdk = libs.versions.android.minSdk.get().toInt()
+                        }
+                        compileOptions {
+                            sourceCompatibility = JavaVersion.VERSION_11
+                            targetCompatibility = JavaVersion.VERSION_11
+                        }
+                    }
+                }   
+            """.trimIndent()
+        ),
+        FileTemplate(
+            name = "DataLayer.kt",
+            content = """
+                import org.gradle.accessors.dm.LibrariesForLibs
+                import org.gradle.api.Project
+                import org.gradle.kotlin.dsl.configure
+                import org.gradle.kotlin.dsl.the
+                import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+
+                fun Project.setupDataLayer() {
+                    val libs = the<LibrariesForLibs>()
+
+                    extensions.configure<KotlinMultiplatformExtension> {
+                        sourceSets.commonMain.dependencies {
+                            // Ktor Bundle
+                            implementation(libs.bundles.ktor)
+                        }
+                    }
+                }
+            """.trimIndent()
+        ),
+        FileTemplate(
+            name = "data.layer.gradle.kts",
+            content = """
+                plugins {
+                    id("kotlin.mp")
+                    id("koin")
+                    id("org.jetbrains.kotlin.plugin.serialization")
+                }
+
+                setupDataLayer()
+            """.trimIndent()
+        ),
+        FileTemplate(
+            name = "android.lib.gradle.kts",
+            content = """
+                plugins {
+                    `android-library`
+                }
+
+                androidLibrarySetup()
+            """.trimIndent()
+        )
+    )
+
+    private val composeConventionPluginFileTemplates = listOf(
+        FileTemplate(
+            name = "compose.mp.gradle.kts",
+            content = """
+                plugins {
+                    id("kotlin.mp")
+                    id("org.jetbrains.compose")
+                    `kotlin-composecompiler`
+                }
+            """.trimIndent()
+        )
+    )
 
 }
