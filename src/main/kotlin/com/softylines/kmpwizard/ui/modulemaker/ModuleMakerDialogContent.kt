@@ -77,7 +77,7 @@ fun ModuleMakerDialogContent(
         TabStrip(
             tabs = tabs,
             style = JewelTheme.editorTabStyle,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
         )
 
         when (selectedTab) {
@@ -86,7 +86,6 @@ fun ModuleMakerDialogContent(
                     state = state,
                     onEvent = onEvent,
                     modifier = Modifier
-                        .weight(1f)
                 )
 
             ModuleMakerTab.ConventionPlugins ->
@@ -94,7 +93,6 @@ fun ModuleMakerDialogContent(
                     state = state,
                     onEvent = onEvent,
                     modifier = Modifier
-                        .weight(1f)
                 )
 
             ModuleMakerTab.Templates ->
