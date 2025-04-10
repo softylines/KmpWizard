@@ -1,6 +1,7 @@
 package com.softylines.kmpwizard.ui.modulemaker
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.intellij.openapi.application.EDT
@@ -15,6 +16,7 @@ import com.intellij.util.ui.JBDimension
 import com.softylines.kmpwizard.core.utils.State
 import com.softylines.kmpwizard.parser.conventionplugins.ConventionPluginParser
 import com.softylines.kmpwizard.parser.libs.LibsParser
+import com.softylines.kmpwizard.ui.modulemaker.layer.UserModuleTemplate
 import com.softylines.kmpwizard.writer.conventionplugins.ConventionPluginWriter
 import com.softylines.kmpwizard.writer.module.ModuleWriter
 import kotlinx.coroutines.CoroutineName
@@ -68,6 +70,30 @@ class ModuleMakerDialogWrapper(
 
             is ModuleMakerEvent.InitConventionPlugin ->
                 initConventionPlugin()
+
+            is ModuleMakerEvent.OnStartCreateTemplate ->
+                onStartCreateTemplate()
+
+            is ModuleMakerEvent.OnSelectTemplateForEdit ->
+                onSelectTemplateForEdit(event)
+
+            is ModuleMakerEvent.OnCancelTemplateEdit ->
+                onCancelTemplateEdit()
+
+            is ModuleMakerEvent.OnSaveTemplate ->
+                onSaveTemplate()
+
+            is ModuleMakerEvent.OnDeleteTemplate ->
+                onDeleteTemplate(event)
+
+            is ModuleMakerEvent.OnAddFileTemplate ->
+                onAddFileTemplate(event)
+
+            is ModuleMakerEvent.OnDeleteTemplateFile ->
+                onDeleteTemplateFile(event)
+
+            is ModuleMakerEvent.OnSelectFileTemplateForEdit ->
+                onSelectFileTemplateForEdit(event)
         }
     }
 
@@ -245,7 +271,7 @@ class ModuleMakerDialogWrapper(
                     conventionPlugins = State.success(conventionPlugins)
                 )
             }
-            .onFailure { 
+            .onFailure {
                 state = state.copy(
                     conventionPlugins = State.failure(
                         message = it.message
@@ -312,4 +338,117 @@ class ModuleMakerDialogWrapper(
                 )
             }
     }
+
+    private fun onStartCreateTemplate() {
+        state = state.copy(
+            isEditingTemplate = true,
+            selectedUserTemplate = null,
+            templateNameState = androidx.compose.foundation.text.input.TextFieldState(),
+            templateParentState = androidx.compose.foundation.text.input.TextFieldState()
+        )
+    }
+
+    private fun onSelectTemplateForEdit(event: ModuleMakerEvent.OnSelectTemplateForEdit) {
+        val template = event.template
+        state = state.copy(
+            isEditingTemplate = true,
+            selectedUserTemplate = template,
+            templateNameState = androidx.compose.foundation.text.input.TextFieldState(template.name),
+            templateParentState = androidx.compose.foundation.text.input.TextFieldState(template.parent),
+            templateFiles = template.files,
+            templateGradleFile = template.buildGradleFile,
+        )
+    }
+
+    private fun onCancelTemplateEdit() {
+        state = state.copy(
+            isEditingTemplate = false,
+            selectedUserTemplate = null,
+            templateNameState = androidx.compose.foundation.text.input.TextFieldState(),
+            templateParentState = androidx.compose.foundation.text.input.TextFieldState()
+        )
+    }
+
+    private fun onSaveTemplate() {
+        val templateName = state.templateNameState.text.toString()
+        val templateParent = state.templateParentState.text.toString()
+        val templateFiles = state.templateFiles
+        val templateGradleFile = state.templateGradleFile
+
+        // Todo: Add validation
+        if (
+            templateName.isBlank() ||
+            templateFiles.isEmpty() ||
+            templateGradleFile == null
+        ) {
+            // Template name is required
+            return
+        }
+
+        val newTemplate = UserModuleTemplate(
+            name = templateName,
+            parent = templateParent,
+            files = templateFiles,
+            buildGradleFile = templateGradleFile,
+        )
+
+        val updatedTemplates =
+            if (state.selectedUserTemplate != null) {
+                // Update existing template
+                state.userTemplates.map {
+                    if (it == state.selectedUserTemplate)
+                        newTemplate
+                    else
+                        it
+                }
+            } else {
+                // Add new template
+                state.userTemplates + newTemplate
+            }
+
+        state = state.copy(
+            userTemplates = updatedTemplates,
+            isEditingTemplate = false,
+            selectedUserTemplate = null,
+            templateNameState = androidx.compose.foundation.text.input.TextFieldState(),
+            templateParentState = androidx.compose.foundation.text.input.TextFieldState(),
+            templateFiles = mutableStateListOf(),
+            templateGradleFile = null,
+        )
+    }
+
+    private fun onDeleteTemplate(event: ModuleMakerEvent.OnDeleteTemplate) {
+        val template = event.template
+        val updatedTemplates = state.userTemplates.filter { it != template }
+
+        state = state.copy(
+            userTemplates = updatedTemplates,
+            // If we're currently editing the template that's being deleted, cancel the edit
+            isEditingTemplate = if (state.selectedUserTemplate == template) false else state.isEditingTemplate,
+            selectedUserTemplate = if (state.selectedUserTemplate == template) null else state.selectedUserTemplate,
+        )
+    }
+
+    private fun onSelectFileTemplateForEdit(event: ModuleMakerEvent.OnSelectFileTemplateForEdit) {
+        // Todo
+    }
+
+    private fun onAddFileTemplate(event: ModuleMakerEvent.OnAddFileTemplate) {
+        val parent = event.fileTemplate.parent
+
+        if (parent == null)
+            state.templateFiles.add(event.fileTemplate)
+        else
+            parent.files.add(event.fileTemplate)
+    }
+
+    private fun onDeleteTemplateFile(event: ModuleMakerEvent.OnDeleteTemplateFile) {
+        val parent = event.fileTemplate.parent
+
+        if (parent == null)
+            state.templateFiles.remove(event.fileTemplate)
+        else
+            parent.files.remove(event.fileTemplate)
+    }
+
 }

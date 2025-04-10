@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package com.softylines.kmpwizard.ui.modulemaker
 
 import androidx.compose.foundation.layout.*
@@ -9,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.softylines.kmpwizard.ui.modulemaker.components.AddModuleSection
 import com.softylines.kmpwizard.ui.modulemaker.components.ConventionPluginSection
 import com.softylines.kmpwizard.ui.modulemaker.components.ModuleTemplateChip
+import com.softylines.kmpwizard.ui.modulemaker.components.TemplatesSection
 import com.softylines.kmpwizard.ui.modulemaker.layer.ModuleTemplate
 import org.jetbrains.jewel.foundation.modifier.onActivated
 import org.jetbrains.jewel.foundation.modifier.trackActivation
@@ -96,7 +99,11 @@ fun ModuleMakerDialogContent(
                 )
 
             ModuleMakerTab.Templates ->
-                Text("")
+                TemplatesSection(
+                    state = state,
+                    onEvent = onEvent,
+                    modifier = Modifier
+                )
         }
     }
 }
