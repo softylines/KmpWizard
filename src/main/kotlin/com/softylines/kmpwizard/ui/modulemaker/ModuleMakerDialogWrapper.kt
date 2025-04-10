@@ -436,14 +436,10 @@ class ModuleMakerDialogWrapper(
     private fun onAddFileTemplate(event: ModuleMakerEvent.OnAddFileTemplate) {
         val parent = event.fileTemplate.parent
 
-        println("Add file template: ${event.fileTemplate.name} to ${parent?.name}")
-
         if (parent == null)
             state.templateFiles.add(event.fileTemplate)
         else
             parent.files.add(event.fileTemplate)
-
-        println("Template files = ${parent?.files.orEmpty().toList()}")
     }
 
     private fun onDeleteTemplateFile(event: ModuleMakerEvent.OnDeleteTemplateFile) {

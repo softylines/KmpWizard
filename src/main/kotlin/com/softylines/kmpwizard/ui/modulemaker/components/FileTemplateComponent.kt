@@ -147,8 +147,6 @@ fun ColumnScope.FolderTemplateComponent(
 
         AddFileFolderComponent(
             onCreateFile = { newFileName ->
-                println("add file: $newFileName for folder ${folderTemplate.name}")
-
                 val newFileTemplate = FileTemplate(
                     name = newFileName,
                     parent = folderTemplate,
