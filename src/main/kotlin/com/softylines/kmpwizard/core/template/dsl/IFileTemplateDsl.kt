@@ -1,5 +1,7 @@
 package com.softylines.kmpwizard.core.template.dsl
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.softylines.kmpwizard.core.template.FileTemplate
 import com.softylines.kmpwizard.core.template.FolderTemplate
 import com.softylines.kmpwizard.core.template.IFileTemplate
@@ -30,6 +32,7 @@ interface IFileTemplateDsl {
     )
 
     fun build(): List<IFileTemplate>
+
 }
 
 class IFileTemplateDslImpl(
@@ -42,7 +45,7 @@ class IFileTemplateDslImpl(
             "$it.${parent.name}"
     }
 
-    private val fileTemplates = mutableListOf<IFileTemplate>()
+    private val fileTemplates = mutableStateListOf<IFileTemplate>()
 
     override fun addFileTemplate(
         name: String,
@@ -71,7 +74,7 @@ class IFileTemplateDslImpl(
         val folderTemplate = FolderTemplate(
             name = name,
             parent = parent,
-            files = mutableListOf()
+            files = mutableStateListOf()
         )
 
         val files = buildIFileTemplateList(folderTemplate, invoke)
@@ -84,4 +87,5 @@ class IFileTemplateDslImpl(
     override fun build(): List<IFileTemplate> {
         return fileTemplates.toList()
     }
+
 }
