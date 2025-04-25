@@ -9,7 +9,7 @@ kotlin = "2.1.0"
 compose = "1.7.3"
 kover = "0.9.1"
 jewel = "0.27.0"
-qodana = "2024.3.4"
+qodana = "2025.1.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
